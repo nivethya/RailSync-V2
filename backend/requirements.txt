@@ -1,0 +1,16 @@
+﻿fastapi
+uvicorn[standard]
+sqlalchemy
+asyncpg
+psycopg[binary]
+geoalchemy2
+pydantic
+pydantic-settings
+python-dotenv
+python-jose[cryptography]
+passlib[bcrypt]
+argon2-cffi
+python-multipart
+httpx
+websockets
+alembic

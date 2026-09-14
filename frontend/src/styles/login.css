@@ -1,0 +1,1408 @@
+.rail-login-page {
+  position: relative;
+
+  min-height: 100vh;
+
+  overflow: hidden;
+
+  display: flex;
+  flex-direction: column;
+
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+
+  color: #11263b;
+}
+
+
+.rail-login-shade {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+
+  background:
+    linear-gradient(
+      90deg,
+      rgba(15, 28, 35, 0.06) 0%,
+      rgba(15, 28, 35, 0.02) 45%,
+      rgba(15, 28, 35, 0.10) 100%
+    );
+}
+
+
+/* =====================================
+   HEADER
+   ===================================== */
+
+.rail-login-header {
+  position: relative;
+  z-index: 20;
+
+  min-height: 74px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 30px;
+
+  padding:
+    8px
+    5vw;
+
+  background:
+    rgba(
+      255,
+      252,
+      247,
+      0.97
+    );
+
+  border-bottom:
+    1px solid
+    rgba(
+      73,
+      62,
+      50,
+      0.12
+    );
+
+  box-shadow:
+    0 5px 20px
+    rgba(
+      25,
+      20,
+      14,
+      0.07
+    );
+
+  backdrop-filter:
+    blur(12px);
+}
+
+
+.rail-login-brand {
+  display: flex;
+  align-items: center;
+
+  gap: 10px;
+}
+
+
+.rail-login-logo {
+  width: 50px;
+  height: 50px;
+
+  display: grid;
+  place-items: center;
+
+  border-radius: 13px;
+
+  background: #102a41;
+
+  color: white;
+}
+
+
+.rail-login-brand-name strong {
+  display: block;
+
+  font-family:
+    Georgia,
+    serif;
+
+  font-size: 32px;
+
+  line-height: 0.9;
+
+  color: #10253b;
+}
+
+
+.rail-login-brand-name span {
+  display: block;
+
+  margin-top: 6px;
+
+  font-size: 7px;
+
+  font-weight: 850;
+
+  letter-spacing: 0.26em;
+
+  color: #263b4d;
+}
+
+
+.rail-login-brand-divider {
+  width: 1px;
+  height: 43px;
+
+  margin-left: 5px;
+
+  background:
+    rgba(
+      53,
+      48,
+      43,
+      0.18
+    );
+}
+
+
+.rail-login-motto span {
+  display: block;
+
+  margin: 2px 0;
+
+  color: #38444d;
+
+  font-size: 7px;
+
+  font-weight: 850;
+
+  letter-spacing: 0.16em;
+}
+
+
+.rail-login-header-right {
+  display: flex;
+  align-items: center;
+
+  gap: 18px;
+}
+
+
+.rail-login-ir {
+  display: flex;
+  align-items: center;
+
+  gap: 10px;
+}
+
+
+.rail-login-ir-logo {
+  width: 43px;
+  height: 43px;
+
+  display: grid;
+  place-items: center;
+
+  border-radius: 50%;
+
+  background: #d62828;
+
+  color: white;
+
+  font-size: 10px;
+
+  font-weight: 900;
+}
+
+
+.rail-login-ir strong {
+  display: block;
+
+  font-size: 12px;
+
+  color: #172735;
+}
+
+
+.rail-login-ir span {
+  display: block;
+
+  margin-top: 2px;
+
+  font-size: 7px;
+
+  font-weight: 800;
+
+  color: #485965;
+}
+
+
+.rail-login-header-divider {
+  width: 1px;
+  height: 38px;
+
+  background:
+    rgba(
+      53,
+      48,
+      43,
+      0.2
+    );
+}
+
+
+.rail-login-home {
+  display: flex;
+  align-items: center;
+
+  gap: 8px;
+
+  border: 0;
+
+  background: transparent;
+
+  color: #9c3920;
+
+  font-size: 11px;
+
+  font-weight: 800;
+
+  cursor: pointer;
+}
+
+
+/* =====================================
+   MAIN
+   ===================================== */
+
+.rail-login-content {
+  position: relative;
+  z-index: 5;
+
+  flex: 1;
+
+  width:
+    min(
+      1500px,
+      calc(100% - 5vw)
+    );
+
+  margin: 0 auto;
+
+  display: grid;
+
+  grid-template-columns:
+    minmax(0, 1.15fr)
+    minmax(440px, 0.85fr);
+
+  align-items: center;
+
+  gap: 34px;
+
+  padding:
+    22px
+    0
+    18px;
+}
+
+
+/* =====================================
+   LEFT PHOTO MESSAGE
+   ===================================== */
+
+.rail-login-photo-message {
+  position: relative;
+
+  min-height: 530px;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+
+  padding: 28px;
+}
+
+
+.rail-login-photo-badge {
+  width: fit-content;
+
+  display: flex;
+  align-items: center;
+
+  gap: 8px;
+
+  padding:
+    9px
+    12px;
+
+  border:
+    1px solid
+    rgba(
+      255,
+      255,
+      255,
+      0.2
+    );
+
+  border-radius: 999px;
+
+  background:
+    rgba(
+      11,
+      36,
+      53,
+      0.82
+    );
+
+  color: white;
+
+  font-size: 8px;
+
+  font-weight: 850;
+
+  letter-spacing: 0.12em;
+
+  backdrop-filter:
+    blur(8px);
+
+  box-shadow:
+    0 10px 30px
+    rgba(
+      10,
+      20,
+      25,
+      0.12
+    );
+}
+
+
+.rail-login-photo-copy {
+  width: fit-content;
+
+  max-width: 520px;
+
+  padding:
+    23px
+    27px;
+
+  border:
+    1px solid
+    rgba(
+      255,
+      255,
+      255,
+      0.14
+    );
+
+  border-radius: 18px;
+
+  background:
+    linear-gradient(
+      135deg,
+      rgba(
+        7,
+        27,
+        40,
+        0.82
+      ),
+      rgba(
+        7,
+        27,
+        40,
+        0.58
+      )
+    );
+
+  color: white;
+
+  backdrop-filter:
+    blur(7px);
+
+  box-shadow:
+    0 20px 50px
+    rgba(
+      5,
+      15,
+      22,
+      0.18
+    );
+}
+
+
+.rail-login-photo-copy > span {
+  color: #e7ae7b;
+
+  font-size: 7px;
+
+  font-weight: 850;
+
+  letter-spacing: 0.18em;
+}
+
+
+.rail-login-photo-copy h1 {
+  margin:
+    7px
+    0
+    8px;
+
+  font-family:
+    Georgia,
+    serif;
+
+  font-size:
+    clamp(
+      38px,
+      4vw,
+      59px
+    );
+
+  line-height: 0.95;
+}
+
+
+.rail-login-photo-copy p {
+  max-width: 450px;
+
+  margin: 0;
+
+  color: #d8e2e7;
+
+  font-size: 11px;
+
+  line-height: 1.55;
+}
+
+
+/* =====================================
+   LOGIN CARD
+   ===================================== */
+
+.rail-login-card {
+  width:
+    min(
+      100%,
+      610px
+    );
+
+  justify-self: end;
+
+  padding:
+    26px
+    30px
+    24px;
+
+  border:
+    1px solid
+    rgba(
+      190,
+      123,
+      61,
+      0.33
+    );
+
+  border-radius: 21px;
+
+  background:
+    rgba(
+      255,
+      252,
+      247,
+      0.98
+    );
+
+  box-shadow:
+    0
+    25px
+    65px
+    rgba(
+      28,
+      20,
+      13,
+      0.2
+    );
+
+  backdrop-filter:
+    blur(15px);
+}
+
+
+.rail-login-card-brand {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 11px;
+}
+
+
+.rail-login-card-logo {
+  color: #112a40;
+}
+
+
+.rail-login-card-brand strong {
+  display: block;
+
+  font-family:
+    Georgia,
+    serif;
+
+  font-size: 39px;
+
+  line-height: 0.9;
+
+  color: #10243a;
+}
+
+
+.rail-login-card-brand span {
+  display: block;
+
+  margin-top: 6px;
+
+  font-size: 7px;
+
+  font-weight: 850;
+
+  letter-spacing: 0.28em;
+
+  color: #324858;
+}
+
+
+.rail-login-card h2 {
+  margin:
+    15px
+    0
+    4px;
+
+  text-align: center;
+
+  font-family:
+    Georgia,
+    serif;
+
+  font-size:
+    31px;
+
+  color: #152940;
+}
+
+
+.rail-login-subtitle {
+  margin:
+    0
+    0
+    19px;
+
+  text-align: center;
+
+  color: #576774;
+
+  font-size: 11px;
+}
+
+
+/* INPUTS */
+
+.rail-login-input {
+  min-height: 48px;
+
+  display: flex;
+  align-items: center;
+
+  gap: 10px;
+
+  margin-top: 11px;
+
+  padding:
+    0
+    13px;
+
+  border:
+    1px solid
+    rgba(
+      72,
+      85,
+      95,
+      0.2
+    );
+
+  border-radius: 9px;
+
+  background:
+    rgba(
+      250,
+      250,
+      249,
+      0.96
+    );
+
+  color: #52636e;
+
+  transition:
+    border-color
+    0.2s ease,
+    box-shadow
+    0.2s ease;
+}
+
+
+.worker
+.rail-login-input:focus-within {
+  border-color:
+    rgba(
+      211,
+      82,
+      27,
+      0.55
+    );
+
+  box-shadow:
+    0
+    0
+    0
+    4px
+    rgba(
+      211,
+      82,
+      27,
+      0.07
+    );
+}
+
+
+.manager
+.rail-login-input:focus-within {
+  border-color:
+    rgba(
+      7,
+      116,
+      144,
+      0.5
+    );
+
+  box-shadow:
+    0
+    0
+    0
+    4px
+    rgba(
+      7,
+      116,
+      144,
+      0.07
+    );
+}
+
+
+.operator
+.rail-login-input:focus-within {
+  border-color:
+    rgba(
+      25,
+      139,
+      67,
+      0.5
+    );
+
+  box-shadow:
+    0
+    0
+    0
+    4px
+    rgba(
+      25,
+      139,
+      67,
+      0.07
+    );
+}
+
+
+.rail-login-input-divider {
+  width: 1px;
+  height: 23px;
+
+  background:
+    rgba(
+      76,
+      87,
+      96,
+      0.18
+    );
+}
+
+
+.rail-login-input input {
+  flex: 1;
+
+  min-width: 0;
+
+  border: 0;
+
+  outline: 0;
+
+  background: transparent;
+
+  color: #263844;
+
+  font-size: 11px;
+}
+
+
+.rail-login-input small {
+  color: #929ca2;
+
+  font-size: 8px;
+}
+
+
+.rail-login-eye {
+  display: grid;
+  place-items: center;
+
+  border: 0;
+
+  background: transparent;
+
+  color: #7c878d;
+
+  cursor: pointer;
+}
+
+
+/* OPTIONS */
+
+.rail-login-options {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 12px;
+
+  margin-top: 13px;
+}
+
+
+.rail-login-options label {
+  display: flex;
+  align-items: center;
+
+  gap: 7px;
+
+  color: #4f5d66;
+
+  font-size: 8px;
+}
+
+
+.rail-login-options input {
+  accent-color: #c95925;
+}
+
+
+.rail-login-options button {
+  border: 0;
+
+  background: transparent;
+
+  color: #a33b22;
+
+  font-size: 8px;
+
+  font-weight: 800;
+
+  cursor: pointer;
+}
+
+
+/* ERROR */
+
+.rail-login-error {
+  margin-top: 12px;
+
+  padding:
+    10px
+    12px;
+
+  border:
+    1px solid
+    #f0b9b3;
+
+  border-radius: 8px;
+
+  background:
+    #fff0ef;
+
+  color: #b23c34;
+
+  font-size: 8px;
+
+  line-height: 1.4;
+}
+
+
+/* SIGN IN */
+
+.rail-login-submit {
+  width: 100%;
+
+  min-height: 49px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 9px;
+
+  margin-top: 14px;
+
+  border: 0;
+
+  border-radius: 9px;
+
+  color: white;
+
+  font-size: 13px;
+
+  font-weight: 800;
+
+  cursor: pointer;
+
+  box-shadow:
+    0
+    12px
+    25px
+    rgba(
+      45,
+      28,
+      18,
+      0.16
+    );
+}
+
+
+.worker
+.rail-login-submit {
+  background:
+    linear-gradient(
+      135deg,
+      #dd5d23,
+      #ad3b14
+    );
+}
+
+
+.manager
+.rail-login-submit {
+  background:
+    linear-gradient(
+      135deg,
+      #087e99,
+      #05536b
+    );
+}
+
+
+.operator
+.rail-login-submit {
+  background:
+    linear-gradient(
+      135deg,
+      #229d4d,
+      #116e32
+    );
+}
+
+
+.rail-login-submit:disabled {
+  cursor: not-allowed;
+
+  opacity: 0.68;
+}
+
+
+/* AUTHORIZED */
+
+.rail-login-authorized {
+  display: grid;
+
+  grid-template-columns:
+    1fr
+    auto
+    auto
+    1fr;
+
+  align-items: center;
+
+  gap: 10px;
+
+  margin:
+    15px
+    0
+    13px;
+}
+
+
+.rail-login-authorized > span {
+  height: 1px;
+
+  background:
+    rgba(
+      76,
+      82,
+      86,
+      0.18
+    );
+}
+
+
+.rail-login-authorized svg {
+  color: #a34428;
+}
+
+
+.rail-login-authorized strong {
+  display: block;
+
+  color: #33414a;
+
+  font-size: 8px;
+}
+
+
+.rail-login-authorized small {
+  display: block;
+
+  margin-top: 3px;
+
+  color: #818a90;
+
+  font-size: 6px;
+}
+
+
+/* FEATURE CARDS */
+
+.rail-login-feature-grid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(
+      3,
+      minmax(
+        0,
+        1fr
+      )
+    );
+
+  gap: 8px;
+}
+
+
+.rail-login-feature-grid article {
+  min-height: 80px;
+
+  display: flex;
+  align-items: center;
+
+  gap: 9px;
+
+  padding:
+    10px;
+
+  border:
+    1px solid
+    rgba(
+      73,
+      82,
+      89,
+      0.1
+    );
+
+  border-radius: 10px;
+
+  background:
+    #fffdf9;
+}
+
+
+.rail-login-feature-icon {
+  width: 39px;
+  height: 39px;
+
+  flex: 0 0 auto;
+
+  display: grid;
+  place-items: center;
+
+  border-radius: 9px;
+}
+
+
+.worker
+.rail-login-feature-grid
+article:nth-child(1)
+.rail-login-feature-icon {
+  background: #e75a24;
+  color: white;
+}
+
+
+.worker
+.rail-login-feature-grid
+article:nth-child(2)
+.rail-login-feature-icon {
+  background: #247742;
+  color: white;
+}
+
+
+.worker
+.rail-login-feature-grid
+article:nth-child(3)
+.rail-login-feature-icon {
+  background: #a84925;
+  color: white;
+}
+
+
+.manager
+.rail-login-feature-icon {
+  background: #08758e;
+  color: white;
+}
+
+
+.operator
+.rail-login-feature-icon {
+  background: #218b48;
+  color: white;
+}
+
+
+.rail-login-feature-grid strong {
+  display: block;
+
+  color: #263845;
+
+  font-size: 8px;
+}
+
+
+.rail-login-feature-grid p {
+  margin:
+    3px
+    0
+    0;
+
+  color: #768188;
+
+  font-size: 6px;
+
+  line-height: 1.35;
+}
+
+
+/* =====================================
+   BOTTOM BENEFIT STRIP
+   ===================================== */
+
+.rail-login-benefits {
+  position: relative;
+  z-index: 15;
+
+  width:
+    calc(
+      100% - 34px
+    );
+
+  min-height: 73px;
+
+  margin:
+    0
+    auto
+    12px;
+
+  display: grid;
+
+  grid-template-columns:
+    1.2fr
+    1px
+    1.1fr
+    1px
+    1.1fr
+    1px
+    1.1fr
+    1px
+    0.85fr;
+
+  align-items: center;
+
+  gap: 18px;
+
+  padding:
+    11px
+    23px;
+
+  border:
+    1px solid
+    rgba(
+      255,
+      255,
+      255,
+      0.21
+    );
+
+  border-radius: 16px;
+
+  background:
+    linear-gradient(
+      135deg,
+      rgba(
+        16,
+        34,
+        44,
+        0.94
+      ),
+      rgba(
+        30,
+        46,
+        55,
+        0.91
+      )
+    );
+
+  color: white;
+
+  box-shadow:
+    0
+    12px
+    30px
+    rgba(
+      10,
+      15,
+      18,
+      0.22
+    );
+
+  backdrop-filter:
+    blur(13px);
+}
+
+
+.rail-login-benefits article {
+  display: flex;
+  align-items: center;
+
+  gap: 12px;
+}
+
+
+.rail-login-benefits article svg {
+  flex: 0 0 auto;
+
+  color: #edf1f3;
+}
+
+
+.rail-login-benefits article strong {
+  display: block;
+
+  font-size: 10px;
+
+  line-height: 1.35;
+}
+
+
+.rail-login-benefits article span {
+  display: block;
+
+  margin-top: 2px;
+
+  color: #b8c5cc;
+
+  font-size: 7px;
+}
+
+
+.rail-login-benefits > i {
+  width: 1px;
+  height: 38px;
+
+  background:
+    rgba(
+      255,
+      255,
+      255,
+      0.22
+    );
+}
+
+
+.rail-login-built {
+  justify-self: end;
+
+  padding-left: 5px;
+
+  color: #b9c5cc;
+
+  font-size: 7px;
+
+  letter-spacing: 0.09em;
+}
+
+
+.rail-login-built span {
+  display: block;
+}
+
+
+.rail-login-built strong {
+  display: block;
+
+  margin-top: 3px;
+
+  color: white;
+
+  font-size: 8px;
+
+  line-height: 1.35;
+}
+
+
+/* =====================================
+   RESPONSIVE
+   ===================================== */
+
+@media (
+  max-width: 1050px
+) {
+  .rail-login-content {
+    grid-template-columns:
+      1fr;
+
+    padding-top: 25px;
+  }
+
+
+  .rail-login-photo-message {
+    min-height: 330px;
+  }
+
+
+  .rail-login-card {
+    justify-self: center;
+  }
+
+
+  .rail-login-benefits {
+    grid-template-columns:
+      repeat(
+        2,
+        1fr
+      );
+
+    gap: 15px;
+  }
+
+
+  .rail-login-benefits > i {
+    display: none;
+  }
+
+
+  .rail-login-built {
+    justify-self: start;
+  }
+}
+
+
+@media (
+  max-width: 760px
+) {
+  .rail-login-header {
+    padding:
+      8px
+      15px;
+  }
+
+
+  .rail-login-motto,
+  .rail-login-ir,
+  .rail-login-header-divider {
+    display: none;
+  }
+
+
+  .rail-login-brand-name strong {
+    font-size: 26px;
+  }
+
+
+  .rail-login-home {
+    font-size: 8px;
+  }
+
+
+  .rail-login-content {
+    width:
+      calc(
+        100% -
+        24px
+      );
+  }
+
+
+  .rail-login-photo-message {
+    min-height: 280px;
+
+    padding: 10px;
+  }
+
+
+  .rail-login-photo-copy {
+    padding: 18px;
+  }
+
+
+  .rail-login-card {
+    padding:
+      23px
+      18px;
+  }
+
+
+  .rail-login-card-brand strong {
+    font-size: 31px;
+  }
+
+
+  .rail-login-feature-grid {
+    grid-template-columns:
+      1fr;
+  }
+
+
+  .rail-login-input small {
+    display: none;
+  }
+
+
+  .rail-login-benefits {
+    width:
+      calc(
+        100% -
+        24px
+      );
+
+    grid-template-columns:
+      1fr;
+
+    padding:
+      17px;
+  }
+}
+/* =====================================
+   CLEAN LOGIN IMAGE AREA
+   Remove text overlays from all roles
+   ===================================== */
+
+.rail-login-photo-badge,
+.rail-login-photo-copy {
+  display: none !important;
+}
+
+.rail-login-photo-message {
+  min-height: 530px;
+  padding: 0;
+  pointer-events: none;
+}

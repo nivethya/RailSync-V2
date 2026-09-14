@@ -1,0 +1,397 @@
+from datetime import datetime, timezone
+
+from fastapi import APIRouter, Depends, HTTPException, status
+from pydantic import BaseModel
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
+
+from app.core.database import get_db
+from app.dependencies.auth import get_current_user
+from app.models.user import User, UserRole
+from app.models.operations import (
+    AffectedTrain,
+    AlternativeStatus,
+    DisruptionEvent,
+    DisruptionStatus,
+    MaintenanceJob,
+    RouteAlternative,
+    TrackSegment,
+)
+
+
+router = APIRouter()
+
+
+def require_operator(user: User) -> None:
+    if user.role != UserRole.TRAIN_OPERATOR:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Train Operator access required",
+        )
+
+
+class SelectAlternativeRequest(BaseModel):
+    note: str | None = None
+
+
+def disruption_payload(disruption: DisruptionEvent) -> dict:
+    job = disruption.maintenance_job
+
+    return {
+        "id": disruption.id,
+        "disruption_code": disruption.disruption_code,
+        "status": disruption.status.value if disruption.status else None,
+        "reason": disruption.reason,
+        "severity": disruption.severity.value if disruption.severity else None,
+        "expected_start": disruption.expected_start,
+        "expected_end": disruption.expected_end,
+        "estimated_delay_minutes": disruption.estimated_delay_minutes,
+        "created_at": disruption.created_at,
+        "resolved_at": disruption.resolved_at,
+        "maintenance_job_id": disruption.maintenance_job_id,
+        "track_segment_id": disruption.track_segment_id,
+        "job": (
+            {
+                "id": job.id,
+                "job_code": job.job_code,
+                "title": job.title,
+                "description": job.description,
+                "severity": job.severity.value if job.severity else None,
+                "status": job.status.value if job.status else None,
+                "priority_score": job.priority_score,
+                "estimated_delay_minutes": job.estimated_delay_minutes,
+                "expected_train_impact": job.expected_train_impact,
+                "planned_start": job.planned_start,
+                "planned_end": job.planned_end,
+                "latitude": None,
+                "longitude": None,
+                "km_marker": job.km_marker,
+            }
+            if job
+            else None
+        ),
+        "affected_train_count": len(disruption.affected_trains or []),
+        "alternative_count": len(disruption.alternatives or []),
+    }
+
+
+def affected_train_payload(train: AffectedTrain) -> dict:
+    return {
+        "id": train.id,
+        "disruption_id": train.disruption_id,
+        "train_id": train.train_id,
+        "train_number": train.train_number,
+        "train_name": train.train_name,
+        "scheduled_passage": train.scheduled_passage,
+        "predicted_delay_minutes": train.predicted_delay_minutes,
+        "priority_class": train.priority_class,
+    }
+
+
+def alternative_payload(alternative: RouteAlternative) -> dict:
+    return {
+        "id": alternative.id,
+        "disruption_id": alternative.disruption_id,
+        "alternative_code": alternative.alternative_code,
+        "action_type": alternative.action_type,
+        "title": alternative.title,
+        "description": alternative.description,
+        "predicted_delay_minutes": alternative.predicted_delay_minutes,
+        "predicted_cost": alternative.predicted_cost,
+        "conflict_count": alternative.conflict_count,
+        "feasibility_score": alternative.feasibility_score,
+        "ml_rank_score": alternative.ml_rank_score,
+        "is_feasible": alternative.is_feasible,
+        "status": alternative.status.value if alternative.status else None,
+        "generated_reason": alternative.generated_reason,
+        "selected_by_user_id": alternative.selected_by_user_id,
+        "selected_at": alternative.selected_at,
+        "created_at": alternative.created_at,
+    }
+
+
+@router.get("/operator/summary")
+async def get_operator_summary(
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    require_operator(current_user)
+
+    result = await db.execute(
+        select(DisruptionEvent)
+        .options(
+            selectinload(DisruptionEvent.affected_trains),
+            selectinload(DisruptionEvent.alternatives),
+        )
+    )
+    disruptions = result.scalars().unique().all()
+
+    open_disruptions = [
+        d
+        for d in disruptions
+        if d.status
+        in {
+            DisruptionStatus.OPEN,
+            DisruptionStatus.EVALUATING,
+            DisruptionStatus.ACTION_SELECTED,
+        }
+    ]
+
+    affected_train_count = sum(
+        len(d.affected_trains or [])
+        for d in open_disruptions
+    )
+
+    recommended_alternatives = sum(
+        1
+        for d in open_disruptions
+        for a in (d.alternatives or [])
+        if a.status == AlternativeStatus.RECOMMENDED
+    )
+
+    predicted_delays = [
+        float(t.predicted_delay_minutes)
+        for d in open_disruptions
+        for t in (d.affected_trains or [])
+        if t.predicted_delay_minutes is not None
+    ]
+
+    average_delay = (
+        round(sum(predicted_delays) / len(predicted_delays), 1)
+        if predicted_delays
+        else 0.0
+    )
+
+    return {
+        "open_disruptions": len(open_disruptions),
+        "affected_trains": affected_train_count,
+        "recommended_alternatives": recommended_alternatives,
+        "average_predicted_delay_minutes": average_delay,
+        "data_mode": "DEMO_REPLAY",
+    }
+
+
+@router.get("/operator/disruptions")
+async def get_disruptions(
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    require_operator(current_user)
+
+    result = await db.execute(
+        select(DisruptionEvent)
+        .options(
+            selectinload(DisruptionEvent.maintenance_job),
+            selectinload(DisruptionEvent.affected_trains),
+            selectinload(DisruptionEvent.alternatives),
+        )
+        .order_by(DisruptionEvent.created_at.desc())
+    )
+
+    disruptions = result.scalars().unique().all()
+
+    return {
+        "count": len(disruptions),
+        "disruptions": [
+            disruption_payload(item)
+            for item in disruptions
+        ],
+    }
+
+
+@router.get("/operator/disruptions/{disruption_id}")
+async def get_disruption_detail(
+    disruption_id: int,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    require_operator(current_user)
+
+    result = await db.execute(
+        select(DisruptionEvent)
+        .where(DisruptionEvent.id == disruption_id)
+        .options(
+            selectinload(DisruptionEvent.maintenance_job),
+            selectinload(DisruptionEvent.affected_trains),
+            selectinload(DisruptionEvent.alternatives),
+        )
+    )
+
+    disruption = result.scalar_one_or_none()
+
+    if disruption is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Disruption not found",
+        )
+
+    return {
+        "disruption": disruption_payload(disruption),
+        "affected_trains": [
+            affected_train_payload(item)
+            for item in disruption.affected_trains
+        ],
+        "alternatives": sorted(
+            [
+                alternative_payload(item)
+                for item in disruption.alternatives
+            ],
+            key=lambda item: float(item.get("ml_rank_score") or 0),
+            reverse=True,
+        ),
+    }
+
+
+@router.get("/operator/affected-trains")
+async def get_affected_trains(
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    require_operator(current_user)
+
+    result = await db.execute(
+        select(AffectedTrain)
+        .order_by(
+            AffectedTrain.predicted_delay_minutes.desc().nullslast()
+        )
+    )
+
+    trains = result.scalars().all()
+
+    return {
+        "count": len(trains),
+        "trains": [
+            affected_train_payload(item)
+            for item in trains
+        ],
+    }
+
+
+@router.get("/operator/alternatives")
+async def get_alternatives(
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    require_operator(current_user)
+
+    result = await db.execute(
+        select(RouteAlternative)
+        .order_by(
+            RouteAlternative.ml_rank_score.desc().nullslast()
+        )
+    )
+
+    alternatives = result.scalars().all()
+
+    return {
+        "count": len(alternatives),
+        "alternatives": [
+            alternative_payload(item)
+            for item in alternatives
+        ],
+    }
+
+
+@router.post("/operator/alternatives/{alternative_id}/select")
+async def select_alternative(
+    alternative_id: int,
+    payload: SelectAlternativeRequest,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    require_operator(current_user)
+
+    result = await db.execute(
+        select(RouteAlternative)
+        .where(RouteAlternative.id == alternative_id)
+    )
+
+    selected = result.scalar_one_or_none()
+
+    if selected is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Operational alternative not found",
+        )
+
+    if not selected.is_feasible:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="This alternative is currently marked infeasible",
+        )
+
+    siblings_result = await db.execute(
+        select(RouteAlternative)
+        .where(
+            RouteAlternative.disruption_id
+            == selected.disruption_id
+        )
+    )
+
+    siblings = siblings_result.scalars().all()
+
+    for item in siblings:
+        if item.id == selected.id:
+            item.status = AlternativeStatus.SELECTED
+            item.selected_by_user_id = current_user.id
+            item.selected_at = datetime.now(timezone.utc)
+        elif item.status == AlternativeStatus.SELECTED:
+            item.status = AlternativeStatus.REJECTED
+
+    disruption_result = await db.execute(
+        select(DisruptionEvent)
+        .where(
+            DisruptionEvent.id
+            == selected.disruption_id
+        )
+    )
+
+    disruption = disruption_result.scalar_one_or_none()
+
+    if disruption is not None:
+        disruption.status = DisruptionStatus.ACTION_SELECTED
+
+    await db.commit()
+    await db.refresh(selected)
+
+    return {
+        "message": "Operational alternative selected",
+        "note": payload.note,
+        "alternative": alternative_payload(selected),
+    }
+
+
+@router.post("/operator/disruptions/{disruption_id}/resolve")
+async def resolve_disruption(
+    disruption_id: int,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    require_operator(current_user)
+
+    result = await db.execute(
+        select(DisruptionEvent)
+        .where(
+            DisruptionEvent.id
+            == disruption_id
+        )
+    )
+
+    disruption = result.scalar_one_or_none()
+
+    if disruption is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Disruption not found",
+        )
+
+    disruption.status = DisruptionStatus.RESOLVED
+    disruption.resolved_at = datetime.now(timezone.utc)
+
+    await db.commit()
+
+    return {
+        "message": "Disruption resolved",
+        "disruption_id": disruption.id,
+    }

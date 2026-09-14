@@ -1,0 +1,1418 @@
+from datetime import datetime, timedelta, timezone
+
+from fastapi import APIRouter, Depends, HTTPException, status
+from geoalchemy2.functions import ST_X, ST_Y
+from pydantic import BaseModel
+from sqlalchemy import func, select
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.core.database import get_db
+from app.dependencies.auth import get_current_user
+from app.models.operations import (
+    AssignmentStatus,
+    ExtensionRequest,
+    ExtensionStatus,
+    JobStatus,
+    MaintenanceJob,
+    RailwayCorridor,
+    TrackSegment,
+    WorkerAssignment,
+    WorkerAvailability,
+    WorkerAvailabilityStatus,
+    WorkerProfile,
+    WorkerSkill,
+    WorkLog,
+)
+from app.models.user import User, UserRole
+from app.websocket.realtime_manager import realtime_manager
+
+
+router = APIRouter(
+    prefix="/manager",
+    tags=["Manager Operations"],
+)
+
+
+# =========================================================
+# REQUEST MODELS
+# =========================================================
+
+
+class AssignWorkerRequest(BaseModel):
+    worker_id: int
+
+
+class ExtensionDecisionRequest(BaseModel):
+    manager_note: str | None = None
+
+
+# =========================================================
+# AUTHORIZATION
+# =========================================================
+
+
+async def require_manager(
+    current_user: User = Depends(get_current_user),
+) -> User:
+    if current_user.role != UserRole.MANAGER:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Manager access required",
+        )
+
+    return current_user
+
+
+# =========================================================
+# HELPERS
+# =========================================================
+
+
+async def job_to_dict(
+    db: AsyncSession,
+    job: MaintenanceJob,
+):
+    segment = None
+    corridor = None
+
+    if job.track_segment_id is not None:
+        segment_result = await db.execute(
+            select(TrackSegment).where(
+                TrackSegment.id == job.track_segment_id
+            )
+        )
+        segment = segment_result.scalar_one_or_none()
+
+        if segment and segment.corridor_id is not None:
+            corridor_result = await db.execute(
+                select(RailwayCorridor).where(
+                    RailwayCorridor.id == segment.corridor_id
+                )
+            )
+            corridor = corridor_result.scalar_one_or_none()
+
+    latitude = None
+    longitude = None
+
+    if job.location is not None:
+        point_result = await db.execute(
+            select(
+                ST_Y(job.location),
+                ST_X(job.location),
+            )
+        )
+
+        point = point_result.first()
+
+        if point:
+            latitude = point[0]
+            longitude = point[1]
+
+    return {
+        "id": job.id,
+        "job_code": job.job_code,
+        "title": job.title,
+        "description": job.description,
+        "asset_type": job.asset_type,
+        "job_type": job.job_type,
+        "severity": job.severity.value,
+        "status": job.status.value,
+        "required_skill": job.required_skill,
+        "required_authority": job.required_authority,
+        "estimated_minutes": job.estimated_minutes,
+        "priority_score": job.priority_score,
+        "priority_reason": job.priority_reason,
+        "km_marker": job.km_marker,
+        "planned_start": job.planned_start,
+        "planned_end": job.planned_end,
+        "actual_start": job.actual_start,
+        "actual_end": job.actual_end,
+        "latitude": latitude,
+        "longitude": longitude,
+        "segment": (
+            {
+                "id": segment.id,
+                "segment_code": segment.segment_code,
+                "name": segment.name,
+                "from_station_name": segment.from_station_name,
+                "to_station_name": segment.to_station_name,
+                "track_number": segment.track_number,
+                "direction": segment.direction,
+            }
+            if segment
+            else None
+        ),
+        "corridor": (
+            {
+                "id": corridor.id,
+                "corridor_code": corridor.corridor_code,
+                "name": corridor.name,
+            }
+            if corridor
+            else None
+        ),
+    }
+
+
+async def get_worker_user_id(
+    db: AsyncSession,
+    worker_id: int,
+) -> int | None:
+    result = await db.execute(
+        select(WorkerProfile.user_id).where(
+            WorkerProfile.id == worker_id
+        )
+    )
+    return result.scalar_one_or_none()
+
+
+async def send_worker_event(
+    db: AsyncSession,
+    worker_id: int,
+    event: dict,
+):
+    worker_user_id = await get_worker_user_id(
+        db,
+        worker_id,
+    )
+
+    if worker_user_id is None:
+        return
+
+    await realtime_manager.send_to_user(
+        worker_user_id,
+        event,
+    )
+
+
+async def get_latest_availability(
+    db: AsyncSession,
+    worker_id: int,
+):
+    result = await db.execute(
+        select(WorkerAvailability)
+        .where(
+            WorkerAvailability.worker_id == worker_id
+        )
+        .order_by(
+            WorkerAvailability.updated_at.desc()
+        )
+        .limit(1)
+    )
+
+    return result.scalar_one_or_none()
+
+
+async def get_today_workload_minutes(
+    db: AsyncSession,
+    worker_id: int,
+) -> int:
+    today = datetime.now(timezone.utc).date()
+
+    result = await db.execute(
+        select(WorkerAssignment).where(
+            WorkerAssignment.worker_id == worker_id,
+            WorkerAssignment.status.notin_(
+                [
+                    AssignmentStatus.CANCELLED,
+                ]
+            ),
+        )
+    )
+
+    assignments = result.scalars().all()
+
+    total = 0
+
+    for assignment in assignments:
+        job_result = await db.execute(
+            select(MaintenanceJob).where(
+                MaintenanceJob.id
+                == assignment.maintenance_job_id
+            )
+        )
+
+        job = job_result.scalar_one_or_none()
+
+        if not job:
+            continue
+
+        if (
+            job.planned_start is not None
+            and job.planned_start.date() == today
+        ):
+            total += int(
+                job.estimated_minutes or 0
+            )
+
+    return total
+
+
+async def get_job_or_404(
+    db: AsyncSession,
+    job_id: int,
+) -> MaintenanceJob:
+    result = await db.execute(
+        select(MaintenanceJob).where(
+            MaintenanceJob.id == job_id
+        )
+    )
+
+    job = result.scalar_one_or_none()
+
+    if not job:
+        raise HTTPException(
+            status_code=404,
+            detail="Maintenance job not found",
+        )
+
+    return job
+
+
+async def get_worker_or_404(
+    db: AsyncSession,
+    worker_id: int,
+) -> WorkerProfile:
+    result = await db.execute(
+        select(WorkerProfile).where(
+            WorkerProfile.id == worker_id
+        )
+    )
+
+    worker = result.scalar_one_or_none()
+
+    if not worker:
+        raise HTTPException(
+            status_code=404,
+            detail="Worker profile not found",
+        )
+
+    return worker
+
+
+async def validate_worker_for_job(
+    db: AsyncSession,
+    job: MaintenanceJob,
+    worker: WorkerProfile,
+):
+    if not worker.is_active:
+        raise HTTPException(
+            status_code=400,
+            detail="Worker is inactive",
+        )
+
+    skill_result = await db.execute(
+        select(WorkerSkill).where(
+            WorkerSkill.worker_id == worker.id,
+            WorkerSkill.skill_code == job.required_skill,
+            WorkerSkill.is_certified.is_(True),
+        )
+    )
+
+    skills = skill_result.scalars().all()
+
+    matching_skill = None
+
+    for skill in skills:
+        if (
+            job.required_authority is None
+            or skill.authority_code
+            == job.required_authority
+        ):
+            matching_skill = skill
+            break
+
+    if matching_skill is None:
+        raise HTTPException(
+            status_code=400,
+            detail=(
+                "Worker does not have the required "
+                "certified skill/authority"
+            ),
+        )
+
+    availability = await get_latest_availability(
+        db,
+        worker.id,
+    )
+
+    if (
+        availability is None
+        or availability.status
+        not in {
+            WorkerAvailabilityStatus.AVAILABLE,
+            WorkerAvailabilityStatus.PARTIAL,
+        }
+    ):
+        raise HTTPException(
+            status_code=400,
+            detail="Worker is not currently available",
+        )
+
+    workload = await get_today_workload_minutes(
+        db,
+        worker.id,
+    )
+
+    max_minutes = int(
+        worker.max_daily_minutes or 360
+    )
+
+    remaining = max(
+        max_minutes - workload,
+        0,
+    )
+
+    if remaining < int(
+        job.estimated_minutes or 0
+    ):
+        raise HTTPException(
+            status_code=400,
+            detail=(
+                "Worker does not have enough "
+                "remaining daily workload capacity"
+            ),
+        )
+
+    return (
+        matching_skill,
+        availability,
+        workload,
+        remaining,
+        max_minutes,
+    )
+
+
+# =========================================================
+# CORRIDORS
+# =========================================================
+
+
+@router.get("/corridors")
+async def get_corridors(
+    db: AsyncSession = Depends(get_db),
+    _: User = Depends(require_manager),
+):
+    result = await db.execute(
+        select(RailwayCorridor).order_by(
+            RailwayCorridor.name.asc()
+        )
+    )
+
+    corridors = result.scalars().all()
+
+    return {
+        "count": len(corridors),
+        "corridors": [
+            {
+                "id": corridor.id,
+                "corridor_code": corridor.corridor_code,
+                "name": corridor.name,
+                "railway_zone": corridor.zone,
+                "division": corridor.division,
+                "source_type": "DEMO_REPLAY",
+            }
+            for corridor in corridors
+        ],
+    }
+
+
+# =========================================================
+# JOBS
+# =========================================================
+
+
+@router.get("/jobs")
+async def get_jobs(
+    corridor_id: int | None = None,
+    severity: str | None = None,
+    job_status: str | None = None,
+    db: AsyncSession = Depends(get_db),
+    _: User = Depends(require_manager),
+):
+    query = select(MaintenanceJob)
+
+    if corridor_id is not None:
+        segment_ids_result = await db.execute(
+            select(TrackSegment.id).where(
+                TrackSegment.corridor_id == corridor_id
+            )
+        )
+
+        segment_ids = list(
+            segment_ids_result.scalars().all()
+        )
+
+        if not segment_ids:
+            return {
+                "count": 0,
+                "jobs": [],
+            }
+
+        query = query.where(
+            MaintenanceJob.track_segment_id.in_(
+                segment_ids
+            )
+        )
+
+    if severity:
+        query = query.where(
+            MaintenanceJob.severity == severity
+        )
+
+    if job_status:
+        query = query.where(
+            MaintenanceJob.status == job_status
+        )
+
+    query = query.order_by(
+        MaintenanceJob.priority_score.desc(),
+        MaintenanceJob.id.asc(),
+    )
+
+    result = await db.execute(query)
+    jobs = result.scalars().all()
+
+    response = []
+
+    for job in jobs:
+        response.append(
+            await job_to_dict(
+                db,
+                job,
+            )
+        )
+
+    return {
+        "count": len(response),
+        "jobs": response,
+    }
+
+
+@router.get("/jobs/{job_id}")
+async def get_job(
+    job_id: int,
+    db: AsyncSession = Depends(get_db),
+    _: User = Depends(require_manager),
+):
+    job = await get_job_or_404(
+        db,
+        job_id,
+    )
+
+    return await job_to_dict(
+        db,
+        job,
+    )
+
+
+# =========================================================
+# ELIGIBLE WORKERS
+# =========================================================
+
+
+@router.get("/jobs/{job_id}/eligible-workers")
+async def eligible_workers(
+    job_id: int,
+    db: AsyncSession = Depends(get_db),
+    _: User = Depends(require_manager),
+):
+    job = await get_job_or_404(
+        db,
+        job_id,
+    )
+
+    if job.status not in {
+        JobStatus.PENDING,
+        JobStatus.READY_FOR_ASSIGNMENT,
+    }:
+        return {
+            "job_id": job.id,
+            "job_code": job.job_code,
+            "count": 0,
+            "eligible_workers": [],
+            "message": (
+                "Job is not currently available "
+                "for worker assignment"
+            ),
+        }
+
+    workers_result = await db.execute(
+        select(WorkerProfile).where(
+            WorkerProfile.is_active.is_(True)
+        )
+    )
+
+    workers = workers_result.scalars().all()
+    eligible = []
+
+    for worker in workers:
+        skill_result = await db.execute(
+            select(WorkerSkill).where(
+                WorkerSkill.worker_id == worker.id,
+                WorkerSkill.skill_code == job.required_skill,
+                WorkerSkill.is_certified.is_(True),
+            )
+        )
+
+        candidate_skills = skill_result.scalars().all()
+
+        matching_skill = None
+
+        for skill in candidate_skills:
+            if (
+                job.required_authority is None
+                or skill.authority_code
+                == job.required_authority
+            ):
+                matching_skill = skill
+                break
+
+        if matching_skill is None:
+            continue
+
+        availability = await get_latest_availability(
+            db,
+            worker.id,
+        )
+
+        if (
+            availability is None
+            or availability.status
+            not in {
+                WorkerAvailabilityStatus.AVAILABLE,
+                WorkerAvailabilityStatus.PARTIAL,
+            }
+        ):
+            continue
+
+        workload_minutes = await get_today_workload_minutes(
+            db,
+            worker.id,
+        )
+
+        max_daily_minutes = int(
+            worker.max_daily_minutes or 360
+        )
+
+        remaining_minutes = max(
+            max_daily_minutes - workload_minutes,
+            0,
+        )
+
+        if remaining_minutes < int(
+            job.estimated_minutes or 0
+        ):
+            continue
+
+        proficiency = max(
+            min(
+                int(
+                    matching_skill.proficiency_level or 1
+                ),
+                5,
+            ),
+            1,
+        )
+
+        proficiency_score = (
+            proficiency / 5
+        ) * 100
+
+        availability_score = (
+            100
+            if availability.status
+            == WorkerAvailabilityStatus.AVAILABLE
+            else 70
+        )
+
+        workload_score = (
+            remaining_minutes
+            / max_daily_minutes
+            * 100
+            if max_daily_minutes > 0
+            else 0
+        )
+
+        suitability_score = round(
+            (
+                proficiency_score * 0.50
+                + availability_score * 0.25
+                + workload_score * 0.25
+            ),
+            2,
+        )
+
+        eligible.append(
+            {
+                "worker_id": worker.id,
+                "user_id": worker.user_id,
+                "employee_code": worker.employee_code,
+                "designation": worker.designation,
+                "department": worker.department,
+                "railway_zone": worker.railway_zone,
+                "division": worker.division,
+                "home_station_code": worker.home_station_code,
+                "home_station_name": worker.home_station_name,
+                "years_experience": worker.years_experience,
+                "availability": availability.status.value,
+                "skill_code": matching_skill.skill_code,
+                "skill_name": matching_skill.skill_name,
+                "authority_code": matching_skill.authority_code,
+                "proficiency_level": matching_skill.proficiency_level,
+                "daily_workload_minutes": workload_minutes,
+                "remaining_minutes": remaining_minutes,
+                "max_daily_minutes": max_daily_minutes,
+                "suitability_score": suitability_score,
+            }
+        )
+
+    eligible.sort(
+        key=lambda item: item["suitability_score"],
+        reverse=True,
+    )
+
+    return {
+        "job_id": job.id,
+        "job_code": job.job_code,
+        "required_skill": job.required_skill,
+        "required_authority": job.required_authority,
+        "estimated_minutes": job.estimated_minutes,
+        "count": len(eligible),
+        "eligible_workers": eligible,
+    }
+
+
+# =========================================================
+# ASSIGN WORKER
+# =========================================================
+
+
+@router.post("/jobs/{job_id}/assign")
+async def assign_worker(
+    job_id: int,
+    payload: AssignWorkerRequest,
+    db: AsyncSession = Depends(get_db),
+    manager_user: User = Depends(require_manager),
+):
+    job = await get_job_or_404(
+        db,
+        job_id,
+    )
+
+    if job.status not in {
+        JobStatus.PENDING,
+        JobStatus.READY_FOR_ASSIGNMENT,
+    }:
+        raise HTTPException(
+            status_code=400,
+            detail=(
+                "Job is not available for assignment"
+            ),
+        )
+
+    worker = await get_worker_or_404(
+        db,
+        payload.worker_id,
+    )
+
+    await validate_worker_for_job(
+        db,
+        job,
+        worker,
+    )
+
+    duplicate_result = await db.execute(
+        select(WorkerAssignment).where(
+            WorkerAssignment.maintenance_job_id == job.id,
+            WorkerAssignment.worker_id == worker.id,
+            WorkerAssignment.status.notin_(
+                [
+                    AssignmentStatus.COMPLETED,
+                    AssignmentStatus.CANCELLED,
+                ]
+            ),
+        )
+    )
+
+    duplicate = duplicate_result.scalar_one_or_none()
+
+    if duplicate:
+        raise HTTPException(
+            status_code=400,
+            detail=(
+                "This worker already has an active "
+                "assignment for this job"
+            ),
+        )
+
+    assignment = WorkerAssignment(
+        maintenance_job_id=job.id,
+        worker_id=worker.id,
+        status=AssignmentStatus.ASSIGNED,
+        progress_percent=0,
+    )
+
+    db.add(assignment)
+
+    job.status = JobStatus.ASSIGNED
+
+    await db.flush()
+
+    db.add(
+        WorkLog(
+            maintenance_job_id=job.id,
+            assignment_id=assignment.id,
+            worker_id=worker.id,
+            action="ASSIGNED",
+            message=(
+                f"Maintenance job assigned to "
+                f"{worker.employee_code} by Manager."
+            ),
+            progress_percent=0,
+        )
+    )
+
+    await db.commit()
+    await db.refresh(assignment)
+
+    await send_worker_event(
+        db,
+        worker.id,
+        {
+            "type": "JOB_ASSIGNED",
+            "source_role": UserRole.MANAGER.value,
+            "manager_user_id": manager_user.id,
+            "worker_id": worker.id,
+            "employee_code": worker.employee_code,
+            "assignment_id": assignment.id,
+            "job_id": job.id,
+            "job_code": job.job_code,
+            "job_title": job.title,
+            "severity": job.severity.value,
+            "job_status": job.status.value,
+            "assignment_status": assignment.status.value,
+            "timestamp": datetime.now(
+                timezone.utc
+            ).isoformat(),
+        },
+    )
+
+    return {
+        "message": "Worker assigned successfully",
+        "assignment_id": assignment.id,
+        "job_id": job.id,
+        "job_code": job.job_code,
+        "worker_id": worker.id,
+        "employee_code": worker.employee_code,
+        "assignment_status": assignment.status.value,
+        "job_status": job.status.value,
+        "realtime_event": "JOB_ASSIGNED",
+    }
+
+
+# =========================================================
+# EXTENSION REQUESTS
+# =========================================================
+
+
+@router.get("/extension-requests")
+async def get_extension_requests(
+    db: AsyncSession = Depends(get_db),
+    _: User = Depends(require_manager),
+):
+    result = await db.execute(
+        select(ExtensionRequest)
+        .order_by(
+            ExtensionRequest.requested_at.desc()
+        )
+    )
+
+    requests = result.scalars().all()
+
+    response = []
+
+    for request in requests:
+        worker_result = await db.execute(
+            select(WorkerProfile).where(
+                WorkerProfile.id
+                == request.worker_id
+            )
+        )
+
+        worker = worker_result.scalar_one_or_none()
+
+        job_result = await db.execute(
+            select(MaintenanceJob).where(
+                MaintenanceJob.id
+                == request.maintenance_job_id
+            )
+        )
+
+        job = job_result.scalar_one_or_none()
+
+        response.append(
+            {
+                "id": request.id,
+                "maintenance_job_id": request.maintenance_job_id,
+                "assignment_id": request.assignment_id,
+                "worker_id": request.worker_id,
+                "employee_code": (
+                    worker.employee_code
+                    if worker
+                    else None
+                ),
+                "job_code": (
+                    job.job_code
+                    if job
+                    else None
+                ),
+                "job_title": (
+                    job.title
+                    if job
+                    else None
+                ),
+                "requested_minutes": request.requested_minutes,
+                "reason": request.reason,
+                "status": request.status.value,
+                "manager_note": request.manager_note,
+                "created_at": request.requested_at,
+                "decided_at": request.reviewed_at,
+            }
+        )
+
+    return {
+        "count": len(response),
+        "extension_requests": response,
+    }
+
+
+# =========================================================
+# APPROVE EXTENSION
+# =========================================================
+
+
+@router.post(
+    "/extension-requests/{request_id}/approve"
+)
+async def approve_extension(
+    request_id: int,
+    payload: ExtensionDecisionRequest,
+    db: AsyncSession = Depends(get_db),
+    manager_user: User = Depends(require_manager),
+):
+    from app.models.operations import (
+        AffectedTrain,
+        AlternativeStatus,
+        DisruptionEvent,
+        DisruptionStatus,
+        RouteAlternative,
+    )
+
+    result = await db.execute(
+        select(ExtensionRequest).where(
+            ExtensionRequest.id == request_id
+        )
+    )
+
+    extension = result.scalar_one_or_none()
+
+    if not extension:
+        raise HTTPException(
+            status_code=404,
+            detail="Extension request not found",
+        )
+
+    if extension.status != ExtensionStatus.PENDING:
+        raise HTTPException(
+            status_code=400,
+            detail=(
+                "Extension request has already "
+                "been processed"
+            ),
+        )
+
+    job = await get_job_or_404(
+        db,
+        extension.maintenance_job_id,
+    )
+
+    assignment_result = await db.execute(
+        select(WorkerAssignment).where(
+            WorkerAssignment.id
+            == extension.assignment_id
+        )
+    )
+
+    assignment = assignment_result.scalar_one_or_none()
+
+    extension.status = ExtensionStatus.APPROVED
+    extension.manager_note = payload.manager_note
+    extension.reviewed_at = datetime.now(timezone.utc)
+    extension.reviewed_by_user_id = manager_user.id
+
+    previous_planned_end = job.planned_end
+
+    if job.planned_end is not None:
+        job.planned_end = (
+            job.planned_end
+            + timedelta(
+                minutes=extension.requested_minutes
+            )
+        )
+
+    extension.approved_new_end = job.planned_end
+
+    if assignment:
+        if assignment.status == AssignmentStatus.PAUSED:
+            job.status = JobStatus.PAUSED
+        else:
+            job.status = JobStatus.IN_PROGRESS
+
+    db.add(
+        WorkLog(
+            maintenance_job_id=job.id,
+            assignment_id=extension.assignment_id,
+            worker_id=extension.worker_id,
+            action="EXTENSION_APPROVED",
+            message=(
+                f"Manager approved "
+                f"{extension.requested_minutes} "
+                f"additional minutes."
+            ),
+            progress_percent=(
+                assignment.progress_percent
+                if assignment
+                else None
+            ),
+        )
+    )
+
+    disruption_result = await db.execute(
+        select(DisruptionEvent).where(
+            DisruptionEvent.maintenance_job_id == job.id,
+            DisruptionEvent.status != DisruptionStatus.RESOLVED,
+        )
+    )
+
+    disruption = disruption_result.scalars().first()
+
+    base_delay = float(
+        job.estimated_delay_minutes or 0.0
+    )
+
+    extension_delay = max(
+        float(extension.requested_minutes) * 0.55,
+        5.0,
+    )
+
+    predicted_delay = round(
+        max(
+            base_delay,
+            extension_delay,
+        ),
+        1,
+    )
+
+    if disruption is None:
+        disruption_code = (
+            f"EXT-{job.job_code}-{extension.id}"
+        )[:80]
+
+        disruption = DisruptionEvent(
+            disruption_code=disruption_code,
+            maintenance_job_id=job.id,
+            track_segment_id=job.track_segment_id,
+            status=DisruptionStatus.EVALUATING,
+            reason=(
+                f"Approved maintenance extension of "
+                f"{extension.requested_minutes} minutes "
+                f"for {job.job_code}. Train Control "
+                f"impact review required."
+            ),
+            expected_start=(
+                job.planned_start
+                or datetime.now(timezone.utc)
+            ),
+            expected_end=job.planned_end,
+            estimated_delay_minutes=predicted_delay,
+            severity=job.severity,
+        )
+
+        db.add(disruption)
+        await db.flush()
+
+    else:
+        disruption.status = DisruptionStatus.EVALUATING
+        disruption.reason = (
+            f"Maintenance extension approved: "
+            f"+{extension.requested_minutes} minutes "
+            f"for {job.job_code}. Re-evaluate train impact."
+        )
+        disruption.expected_end = job.planned_end
+        disruption.estimated_delay_minutes = max(
+            float(disruption.estimated_delay_minutes or 0.0),
+            predicted_delay,
+        )
+        disruption.severity = job.severity
+
+        await db.flush()
+
+    affected_result = await db.execute(
+        select(AffectedTrain).where(
+            AffectedTrain.disruption_id == disruption.id
+        )
+    )
+
+    existing_affected = affected_result.scalars().all()
+
+    if not existing_affected:
+        replay_train_templates = [
+            (
+                f"{12600 + (job.id % 80):05d}",
+                "RailSync Express DEMO_REPLAY",
+                "EXPRESS",
+                1.00,
+            ),
+            (
+                f"{66000 + (job.id % 90):05d}",
+                "RailSync Local DEMO_REPLAY",
+                "LOCAL",
+                0.72,
+            ),
+            (
+                f"{12000 + (job.id % 70):05d}",
+                "RailSync Superfast DEMO_REPLAY",
+                "SUPERFAST",
+                1.18,
+            ),
+        ]
+
+        passage_base = (
+            previous_planned_end
+            or job.planned_start
+            or datetime.now(timezone.utc)
+        )
+
+        for index, (
+            train_number,
+            train_name,
+            priority_class,
+            delay_factor,
+        ) in enumerate(replay_train_templates):
+            db.add(
+                AffectedTrain(
+                    disruption_id=disruption.id,
+                    train_id=None,
+                    train_number=train_number,
+                    train_name=train_name,
+                    scheduled_passage=(
+                        passage_base
+                        + timedelta(
+                            minutes=15 * (index + 1)
+                        )
+                    ),
+                    predicted_delay_minutes=round(
+                        predicted_delay * delay_factor,
+                        1,
+                    ),
+                    priority_class=priority_class,
+                )
+            )
+
+    alternatives_result = await db.execute(
+        select(RouteAlternative).where(
+            RouteAlternative.disruption_id
+            == disruption.id
+        )
+    )
+
+    existing_alternatives = alternatives_result.scalars().all()
+
+    if not existing_alternatives:
+        hold_delay = round(
+            predicted_delay + 8.0,
+            1,
+        )
+
+        regulate_delay = round(
+            max(
+                predicted_delay * 0.72,
+                3.0,
+            ),
+            1,
+        )
+
+        reroute_delay = round(
+            max(
+                predicted_delay * 0.55,
+                2.0,
+            ),
+            1,
+        )
+
+        alternatives = [
+            RouteAlternative(
+                disruption_id=disruption.id,
+                alternative_code=(
+                    f"{disruption.disruption_code}-A1"
+                )[:80],
+                action_type="REROUTE",
+                title="Use Feasible Alternate Corridor",
+                description=(
+                    "Divert affected service through a "
+                    "pre-generated feasible alternate corridor "
+                    "when route capacity permits."
+                ),
+                predicted_delay_minutes=reroute_delay,
+                predicted_cost=72.0,
+                conflict_count=1,
+                feasibility_score=0.91,
+                ml_rank_score=0.93,
+                is_feasible=True,
+                status=AlternativeStatus.RECOMMENDED,
+                generated_reason=(
+                    "DEMO_REPLAY ranking. Feasible route/action "
+                    "candidate with lower predicted delay. "
+                    "Replace ranking score with trained model "
+                    "output when ML inference is wired."
+                ),
+            ),
+            RouteAlternative(
+                disruption_id=disruption.id,
+                alternative_code=(
+                    f"{disruption.disruption_code}-A2"
+                )[:80],
+                action_type="SPEED_REGULATION",
+                title="Regulate Approach and Sequence Trains",
+                description=(
+                    "Meter approaching trains and sequence "
+                    "higher-priority services through the "
+                    "available path."
+                ),
+                predicted_delay_minutes=regulate_delay,
+                predicted_cost=48.0,
+                conflict_count=2,
+                feasibility_score=0.86,
+                ml_rank_score=0.84,
+                is_feasible=True,
+                status=AlternativeStatus.GENERATED,
+                generated_reason=(
+                    "DEMO_REPLAY heuristic ranking based on "
+                    "delay, conflicts and feasibility."
+                ),
+            ),
+            RouteAlternative(
+                disruption_id=disruption.id,
+                alternative_code=(
+                    f"{disruption.disruption_code}-A3"
+                )[:80],
+                action_type="HOLD",
+                title="Controlled Hold Before Maintenance Block",
+                description=(
+                    "Hold the affected train before the "
+                    "maintenance section until a safe movement "
+                    "window becomes available."
+                ),
+                predicted_delay_minutes=hold_delay,
+                predicted_cost=31.0,
+                conflict_count=0,
+                feasibility_score=0.97,
+                ml_rank_score=0.68,
+                is_feasible=True,
+                status=AlternativeStatus.GENERATED,
+                generated_reason=(
+                    "DEMO_REPLAY heuristic ranking. Lowest "
+                    "conflict risk but higher delay."
+                ),
+            ),
+        ]
+
+        for alternative in alternatives:
+            db.add(alternative)
+
+    await db.commit()
+
+    await send_worker_event(
+        db,
+        extension.worker_id,
+        {
+            "type": "EXTENSION_APPROVED",
+            "source_role": UserRole.MANAGER.value,
+            "manager_user_id": manager_user.id,
+            "extension_request_id": extension.id,
+            "assignment_id": extension.assignment_id,
+            "job_id": job.id,
+            "job_code": job.job_code,
+            "requested_minutes": extension.requested_minutes,
+            "manager_note": extension.manager_note,
+            "new_planned_end": (
+                job.planned_end.isoformat()
+                if job.planned_end
+                else None
+            ),
+            "timestamp": datetime.now(
+                timezone.utc
+            ).isoformat(),
+        },
+    )
+
+    await realtime_manager.send_to_role(
+        UserRole.TRAIN_OPERATOR.value,
+        {
+            "type": "MAINTENANCE_EXTENSION_APPROVED",
+            "source_role": UserRole.MANAGER.value,
+            "manager_user_id": manager_user.id,
+            "extension_request_id": extension.id,
+            "disruption_id": disruption.id,
+            "disruption_code": disruption.disruption_code,
+            "job_id": job.id,
+            "job_code": job.job_code,
+            "requested_minutes": extension.requested_minutes,
+            "predicted_delay_minutes": (
+                disruption.estimated_delay_minutes
+            ),
+            "new_planned_end": (
+                job.planned_end.isoformat()
+                if job.planned_end
+                else None
+            ),
+            "message": (
+                "Maintenance duration changed. "
+                "Train Control disruption review created."
+            ),
+            "timestamp": datetime.now(
+                timezone.utc
+            ).isoformat(),
+        },
+    )
+
+    return {
+        "message": "Extension approved",
+        "extension_request_id": extension.id,
+        "status": extension.status.value,
+        "requested_minutes": extension.requested_minutes,
+        "new_planned_end": job.planned_end,
+        "worker_event": "EXTENSION_APPROVED",
+        "operator_event": (
+            "MAINTENANCE_EXTENSION_APPROVED"
+        ),
+        "operator_disruption": {
+            "id": disruption.id,
+            "disruption_code": disruption.disruption_code,
+            "status": disruption.status.value,
+            "predicted_delay_minutes": (
+                disruption.estimated_delay_minutes
+            ),
+            "data_mode": "DEMO_REPLAY",
+        },
+    }
+
+
+# =========================================================
+# REJECT EXTENSION
+# =========================================================
+
+
+@router.post(
+    "/extension-requests/{request_id}/reject"
+)
+async def reject_extension(
+    request_id: int,
+    payload: ExtensionDecisionRequest,
+    db: AsyncSession = Depends(get_db),
+    manager_user: User = Depends(require_manager),
+):
+    result = await db.execute(
+        select(ExtensionRequest).where(
+            ExtensionRequest.id == request_id
+        )
+    )
+
+    extension = result.scalar_one_or_none()
+
+    if not extension:
+        raise HTTPException(
+            status_code=404,
+            detail="Extension request not found",
+        )
+
+    if extension.status != ExtensionStatus.PENDING:
+        raise HTTPException(
+            status_code=400,
+            detail=(
+                "Extension request has already "
+                "been processed"
+            ),
+        )
+
+    job = await get_job_or_404(
+        db,
+        extension.maintenance_job_id,
+    )
+
+    assignment_result = await db.execute(
+        select(WorkerAssignment).where(
+            WorkerAssignment.id
+            == extension.assignment_id
+        )
+    )
+
+    assignment = assignment_result.scalar_one_or_none()
+
+    extension.status = ExtensionStatus.REJECTED
+    extension.manager_note = payload.manager_note
+    extension.reviewed_at = datetime.now(timezone.utc)
+    extension.reviewed_by_user_id = manager_user.id
+
+    if assignment:
+        if assignment.status == AssignmentStatus.PAUSED:
+            job.status = JobStatus.PAUSED
+        elif assignment.status == AssignmentStatus.IN_PROGRESS:
+            job.status = JobStatus.IN_PROGRESS
+
+    db.add(
+        WorkLog(
+            maintenance_job_id=job.id,
+            assignment_id=extension.assignment_id,
+            worker_id=extension.worker_id,
+            action="EXTENSION_REJECTED",
+            message=(
+                "Manager rejected the maintenance "
+                "extension request."
+            ),
+            progress_percent=(
+                assignment.progress_percent
+                if assignment
+                else None
+            ),
+        )
+    )
+
+    await db.commit()
+
+    await send_worker_event(
+        db,
+        extension.worker_id,
+        {
+            "type": "EXTENSION_REJECTED",
+            "source_role": UserRole.MANAGER.value,
+            "manager_user_id": manager_user.id,
+            "extension_request_id": extension.id,
+            "assignment_id": extension.assignment_id,
+            "job_id": job.id,
+            "job_code": job.job_code,
+            "requested_minutes": extension.requested_minutes,
+            "manager_note": extension.manager_note,
+            "timestamp": datetime.now(
+                timezone.utc
+            ).isoformat(),
+        },
+    )
+
+    return {
+        "message": "Extension rejected",
+        "extension_request_id": extension.id,
+        "status": extension.status.value,
+        "worker_event": "EXTENSION_REJECTED",
+    }

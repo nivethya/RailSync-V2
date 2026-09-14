@@ -1,0 +1,399 @@
+.worker-job-map-shell {
+  position: relative;
+
+  width: 100%;
+  height: 205px;
+
+  overflow: hidden;
+
+  border:
+    1px solid
+    rgba(
+      33,
+      55,
+      67,
+      0.18
+    );
+
+  border-radius: 9px;
+
+  background:
+    #283e36;
+}
+
+
+.worker-job-map {
+  width: 100% !important;
+  height: 205px !important;
+
+  background:
+    #d8ddd8;
+}
+
+
+.worker-job-map
+.leaflet-tile-pane {
+  filter:
+    saturate(0.82)
+    contrast(1.06)
+    brightness(0.88);
+}
+
+
+.worker-job-map
+.leaflet-control-attribution {
+  font-size: 5px;
+
+  opacity: 0.65;
+}
+
+
+.worker-job-map
+.leaflet-tooltip {
+  box-shadow:
+    0
+    4px
+    12px
+    rgba(
+      5,
+      16,
+      23,
+      0.22
+    );
+}
+
+
+.rail-job-tooltip {
+  padding:
+    5px
+    7px !important;
+
+  border:
+    1px solid
+    rgba(
+      255,
+      255,
+      255,
+      0.22
+    ) !important;
+
+  border-radius:
+    5px !important;
+
+  background:
+    rgba(
+      7,
+      28,
+      40,
+      0.92
+    ) !important;
+
+  color:
+    white !important;
+
+  text-align:
+    center !important;
+}
+
+
+.rail-job-tooltip::before {
+  border-top-color:
+    rgba(
+      7,
+      28,
+      40,
+      0.92
+    ) !important;
+}
+
+
+.rail-job-tooltip strong {
+  display: block;
+
+  font-size: 7px;
+}
+
+
+.rail-job-tooltip span {
+  display: block;
+
+  margin-top: 2px;
+
+  color: #d7e2e8;
+
+  font-size: 6px;
+}
+
+
+.rail-job-tooltip.work {
+  background:
+    rgba(
+      166,
+      54,
+      20,
+      0.95
+    ) !important;
+}
+
+
+.rail-job-tooltip.work::before {
+  border-top-color:
+    rgba(
+      166,
+      54,
+      20,
+      0.95
+    ) !important;
+}
+
+
+.worker-job-map-status {
+  position: absolute;
+
+  top: 9px;
+  right: 9px;
+
+  z-index: 600;
+
+  display: flex;
+  align-items: center;
+
+  gap: 6px;
+
+  padding:
+    6px
+    9px;
+
+  border:
+    1px solid
+    rgba(
+      255,
+      255,
+      255,
+      0.14
+    );
+
+  border-radius:
+    999px;
+
+  background:
+    rgba(
+      7,
+      29,
+      40,
+      0.88
+    );
+
+  color: white;
+
+  font-size: 6px;
+
+  font-weight: 850;
+
+  letter-spacing:
+    0.09em;
+
+  pointer-events: none;
+}
+
+
+.worker-job-map-status i {
+  width: 6px;
+  height: 6px;
+
+  border-radius:
+    50%;
+
+  background:
+    #28ce6d;
+
+  box-shadow:
+    0
+    0
+    0
+    4px
+    rgba(
+      40,
+      206,
+      109,
+      0.12
+    );
+}
+
+
+.worker-job-map-origin,
+.worker-job-map-destination {
+  position: absolute;
+
+  bottom: 10px;
+
+  z-index: 600;
+
+  padding:
+    5px
+    8px;
+
+  border-radius:
+    5px;
+
+  background:
+    rgba(
+      7,
+      27,
+      38,
+      0.86
+    );
+
+  color:
+    white;
+
+  font-size: 6px;
+
+  font-weight: 800;
+
+  pointer-events: none;
+}
+
+
+.worker-job-map-origin {
+  left: 10px;
+}
+
+
+.worker-job-map-destination {
+  right: 10px;
+}
+
+
+.worker-job-map-legend {
+  position: absolute;
+
+  left: 50%;
+  bottom: 9px;
+
+  z-index: 600;
+
+  transform:
+    translateX(-50%);
+
+  display: flex;
+
+  gap: 11px;
+
+  padding:
+    5px
+    9px;
+
+  border-radius:
+    6px;
+
+  background:
+    rgba(
+      7,
+      27,
+      38,
+      0.84
+    );
+
+  color:
+    #e4ecef;
+
+  pointer-events: none;
+}
+
+
+.worker-job-map-legend span {
+  display: flex;
+  align-items: center;
+
+  gap: 4px;
+
+  font-size: 5px;
+
+  font-weight: 750;
+}
+
+
+.worker-job-map-legend i {
+  width: 6px;
+  height: 6px;
+
+  border-radius:
+    50%;
+}
+
+
+.legend-green {
+  background:
+    #1fa459;
+}
+
+
+.legend-orange {
+  background:
+    #e95522;
+}
+
+
+.legend-red {
+  background:
+    #d82f27;
+}
+
+
+.worker-job-compass {
+  position: absolute;
+
+  right: 10px;
+  bottom: 38px;
+
+  z-index: 600;
+
+  width: 30px;
+  height: 30px;
+
+  display: grid;
+  place-items: center;
+
+  border:
+    1px solid
+    rgba(
+      255,
+      255,
+      255,
+      0.52
+    );
+
+  border-radius:
+    50%;
+
+  background:
+    rgba(
+      7,
+      27,
+      38,
+      0.78
+    );
+
+  color:
+    white;
+
+  pointer-events:
+    none;
+}
+
+
+.worker-job-compass strong {
+  position: absolute;
+
+  top: 3px;
+
+  font-size: 5px;
+}
+
+
+.worker-job-compass span {
+  margin-top: 5px;
+
+  font-size: 11px;
+}

@@ -1,0 +1,1295 @@
+.rail-home {
+  min-height: 100vh;
+  background: #f5eee4;
+  color: #182131;
+  padding: 7px;
+  overflow-x: hidden;
+}
+
+/* ================================
+   HEADER
+================================ */
+
+.rail-header {
+  position: relative;
+  z-index: 20;
+
+  min-height: 68px;
+
+  display: grid;
+  grid-template-columns:
+    minmax(330px, auto)
+    1fr
+    auto;
+
+  align-items: center;
+  gap: 22px;
+
+  padding: 7px 14px;
+
+  border:
+    1px solid rgba(94, 71, 48, 0.12);
+
+  border-radius: 17px;
+
+  background:
+    rgba(255, 252, 247, 0.96);
+
+  box-shadow:
+    0 5px 20px
+    rgba(53, 37, 22, 0.06);
+}
+
+.header-brand {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+}
+
+.mini-brand-symbol {
+  position: relative;
+
+  width: 43px;
+  height: 43px;
+
+  border-radius: 11px;
+
+  background: #2a211b;
+
+  overflow: hidden;
+}
+
+.mini-brand-symbol span {
+  position: absolute;
+
+  top: -5px;
+
+  width: 5px;
+  height: 54px;
+
+  border-radius: 20px;
+
+  background: #d9a052;
+
+  transform: rotate(-29deg);
+}
+
+.mini-brand-symbol span:first-child {
+  left: 12px;
+}
+
+.mini-brand-symbol span:last-child {
+  right: 12px;
+}
+
+.header-brand-copy strong {
+  display: block;
+
+  color: #102640;
+
+  font-family:
+    Georgia,
+    "Times New Roman",
+    serif;
+
+  font-size: 27px;
+
+  line-height: 0.95;
+}
+
+.header-brand-copy small {
+  display: block;
+
+  margin-top: 5px;
+
+  color: #6b6c68;
+
+  font-size: 7px;
+  font-weight: 800;
+
+  letter-spacing: 0.3em;
+}
+
+.header-motto {
+  min-width: 125px;
+
+  margin-left: 8px;
+
+  padding-left: 13px;
+
+  border-left:
+    1px solid rgba(54, 46, 38, 0.18);
+}
+
+.header-motto span {
+  display: block;
+
+  margin: 1px 0;
+
+  color: #514b43;
+
+  font-size: 7px;
+  font-weight: 800;
+
+  letter-spacing: 0.22em;
+}
+
+.main-navigation {
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  gap: 6px;
+}
+
+.navigation-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+
+  min-height: 43px;
+
+  padding: 0 12px;
+
+  border: 0;
+  border-bottom: 2px solid transparent;
+
+  background: transparent;
+
+  color: #333638;
+
+  font-size: 12px;
+  font-weight: 650;
+}
+
+.navigation-item.active {
+  color: #af4a1d;
+
+  border-bottom-color: #b44d20;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+
+  gap: 17px;
+}
+
+.railway-identity {
+  display: flex;
+  align-items: center;
+
+  gap: 9px;
+}
+
+.railway-roundel {
+  width: 43px;
+  height: 43px;
+
+  display: grid;
+  place-items: center;
+
+  border-radius: 50%;
+
+  background: #cf2228;
+
+  color: white;
+
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.railway-identity strong {
+  display: block;
+
+  color: #172b43;
+
+  font-size: 13px;
+}
+
+.railway-identity span {
+  display: block;
+
+  margin-top: 2px;
+
+  color: #304458;
+
+  font-size: 8px;
+  font-weight: 800;
+}
+
+.header-login {
+  min-height: 46px;
+
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  padding: 0 18px;
+
+  border: 0;
+  border-radius: 11px;
+
+  background:
+    linear-gradient(
+      135deg,
+      #ca6928,
+      #ad4b18
+    );
+
+  color: white;
+
+  font-size: 14px;
+  font-weight: 800;
+
+  box-shadow:
+    0 10px 24px
+    rgba(175, 77, 24, 0.2);
+}
+
+/* ================================
+   HERO
+================================ */
+
+.rail-hero {
+  position: relative;
+
+  height:
+    calc(100vh - 82px);
+
+  min-height: 720px;
+
+  margin-top: 7px;
+
+  overflow: hidden;
+
+  border-radius: 22px;
+
+  border:
+    1px solid rgba(91, 71, 51, 0.15);
+
+  background: #eadcc9;
+}
+
+/*
+  THIS is the train JPG.
+  It is intentionally visible.
+*/
+
+.hero-photo {
+  position: absolute;
+  inset: 0;
+
+  background-image:
+    url("/images/landing-train.jpg");
+
+  background-size: cover;
+
+  background-position:
+    52% center;
+
+  filter:
+    saturate(1.04)
+    contrast(1.02);
+}
+
+.hero-gradient {
+  position: absolute;
+  inset: 0;
+
+  background:
+    linear-gradient(
+      90deg,
+
+      rgba(255, 250, 242, 0.97)
+      0%,
+
+      rgba(255, 250, 242, 0.91)
+      24%,
+
+      rgba(255, 250, 242, 0.64)
+      39%,
+
+      rgba(255, 250, 242, 0.13)
+      58%,
+
+      rgba(255, 250, 242, 0.02)
+      100%
+    );
+}
+
+/* ================================
+   LEFT CONTENT
+================================ */
+
+.hero-left-content {
+  position: absolute;
+
+  z-index: 5;
+
+  left: 4.6%;
+  top: 7%;
+
+  width: 46%;
+
+  max-width: 730px;
+}
+
+.large-brand {
+  display: flex;
+  align-items: center;
+
+  gap: 8px;
+}
+
+.tricolor-logo {
+  position: relative;
+
+  width: 130px;
+  height: 75px;
+}
+
+.tricolor {
+  position: absolute;
+
+  left: 0;
+
+  width: 88px;
+  height: 11px;
+
+  border-radius: 50px;
+
+  transform: rotate(-15deg);
+}
+
+.tricolor.orange {
+  top: 12px;
+
+  background: #ef741d;
+}
+
+.tricolor.white {
+  top: 31px;
+
+  background: #f7f4ee;
+
+  box-shadow:
+    0 0 0 1px
+    rgba(60, 60, 60, 0.05);
+}
+
+.tricolor.green {
+  top: 50px;
+
+  background: #14844e;
+}
+
+.train-circle {
+  position: absolute;
+
+  right: 5px;
+  top: 2px;
+
+  width: 58px;
+  height: 58px;
+
+  display: grid;
+  place-items: center;
+
+  border-radius: 50%;
+
+  background: #102945;
+
+  color: #ffffff;
+
+  box-shadow:
+    0 9px 24px
+    rgba(12, 35, 60, 0.18);
+}
+
+.large-brand-name {
+  color: #102945;
+
+  font-family:
+    Georgia,
+    "Times New Roman",
+    serif;
+
+  font-size:
+    clamp(50px, 4vw, 72px);
+
+  font-weight: 700;
+
+  letter-spacing: -0.05em;
+}
+
+.hero-left-content h1 {
+  margin:
+    4px 0 8px;
+
+  color: #18202f;
+
+  font-family:
+    Georgia,
+    "Times New Roman",
+    serif;
+
+  font-size:
+    clamp(40px, 3.5vw, 61px);
+
+  line-height: 0.99;
+
+  letter-spacing: -0.035em;
+}
+
+.hero-lead {
+  max-width: 570px;
+
+  margin: 0;
+
+  color: #475563;
+
+  font-size:
+    clamp(14px, 1.1vw, 18px);
+
+  line-height: 1.42;
+}
+
+/* ================================
+   FEATURE CARDS
+================================ */
+
+.landing-feature-row {
+  display: grid;
+
+  grid-template-columns:
+    repeat(5, minmax(0, 1fr));
+
+  gap: 10px;
+
+  margin-top: 22px;
+}
+
+.landing-feature {
+  min-height: 116px;
+
+  padding: 12px 10px;
+
+  border:
+    1px solid rgba(137, 102, 70, 0.15);
+
+  border-radius: 14px;
+
+  background:
+    rgba(255, 250, 244, 0.88);
+
+  box-shadow:
+    0 8px 20px
+    rgba(71, 46, 23, 0.06);
+
+  backdrop-filter: blur(6px);
+}
+
+.landing-feature-icon {
+  width: 37px;
+  height: 37px;
+
+  display: grid;
+  place-items: center;
+
+  margin-bottom: 9px;
+
+  border-radius: 10px;
+
+  color: #b44e1b;
+
+  background:
+    rgba(255, 241, 230, 0.9);
+
+  border:
+    1px solid rgba(181, 80, 28, 0.13);
+}
+
+.landing-feature strong {
+  display: block;
+
+  color: #242b33;
+
+  font-size: 11px;
+
+  line-height: 1.2;
+}
+
+.landing-feature span {
+  display: block;
+
+  margin-top: 5px;
+
+  color: #66717c;
+
+  font-size: 8px;
+
+  line-height: 1.3;
+}
+
+/* ================================
+   HERO BUTTONS
+================================ */
+
+.hero-buttons {
+  display: flex;
+  align-items: center;
+
+  gap: 12px;
+
+  margin-top: 18px;
+}
+
+.map-main-button,
+.how-button {
+  min-height: 45px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 8px;
+
+  padding: 0 18px;
+
+  border-radius: 11px;
+
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.map-main-button {
+  border: 0;
+
+  background:
+    linear-gradient(
+      135deg,
+      #cb6425,
+      #af4919
+    );
+
+  color: white;
+
+  box-shadow:
+    0 11px 24px
+    rgba(177, 76, 25, 0.2);
+}
+
+.how-button {
+  border:
+    1px solid
+    rgba(91, 70, 49, 0.24);
+
+  background:
+    rgba(255, 253, 249, 0.88);
+
+  color: #28313a;
+}
+
+/* ================================
+   NETWORK PANEL
+================================ */
+
+.rail-network-panel {
+  position: absolute;
+
+  z-index: 7;
+
+  top: 4%;
+
+  right: 2%;
+
+  width: 34%;
+
+  min-width: 490px;
+
+  height: 63%;
+
+  min-height: 485px;
+
+  display: flex;
+  flex-direction: column;
+
+  padding: 17px;
+
+  border:
+    1px solid
+    rgba(127, 172, 211, 0.28);
+
+  border-radius: 20px;
+
+  background:
+    linear-gradient(
+      145deg,
+      rgba(9, 33, 58, 0.97),
+      rgba(7, 26, 46, 0.98)
+    );
+
+  color: white;
+
+  box-shadow:
+    0 20px 45px
+    rgba(5, 21, 37, 0.35);
+}
+
+.network-panel-header {
+  display: flex;
+
+  justify-content: space-between;
+
+  gap: 12px;
+}
+
+.network-panel-header h2 {
+  margin: 0;
+
+  font-size: 17px;
+}
+
+.network-demo {
+  display: flex;
+  align-items: center;
+
+  gap: 6px;
+
+  margin-top: 6px;
+
+  color: #9db5cc;
+
+  font-size: 7px;
+  font-weight: 800;
+
+  letter-spacing: 0.11em;
+}
+
+.network-demo i {
+  width: 7px;
+  height: 7px;
+
+  border-radius: 50%;
+
+  background: #27d477;
+
+  box-shadow:
+    0 0 0 5px
+    rgba(39, 212, 119, 0.1);
+}
+
+.india-selector {
+  height: 34px;
+
+  padding: 0 12px;
+
+  display: flex;
+  align-items: center;
+
+  gap: 18px;
+
+  border:
+    1px solid
+    rgba(110, 172, 222, 0.26);
+
+  border-radius: 9px;
+
+  background:
+    rgba(17, 61, 98, 0.9);
+
+  color: white;
+
+  font-size: 10px;
+  font-weight: 750;
+}
+
+.network-panel-main {
+  flex: 1;
+
+  display: grid;
+
+  grid-template-columns:
+    minmax(0, 1fr)
+    145px;
+
+  min-height: 0;
+
+  margin-top: 8px;
+}
+
+.network-preview {
+  position: relative;
+
+  min-height: 0;
+
+  overflow: hidden;
+}
+
+.map-background-grid {
+  position: absolute;
+  inset: 0;
+
+  opacity: 0.18;
+
+  background-image:
+    linear-gradient(
+      rgba(87, 141, 187, 0.12) 1px,
+      transparent 1px
+    ),
+    linear-gradient(
+      90deg,
+      rgba(87, 141, 187, 0.12) 1px,
+      transparent 1px
+    );
+
+  background-size: 25px 25px;
+}
+
+.india-network-svg {
+  position: relative;
+
+  z-index: 2;
+
+  width: 100%;
+  height: 100%;
+
+  max-height: 380px;
+}
+
+.india-outline {
+  fill: url(#indiaFill);
+
+  stroke:
+    rgba(94, 170, 234, 0.42);
+
+  stroke-width: 2;
+}
+
+.rail-lines path {
+  fill: none;
+
+  stroke: #f59852;
+
+  stroke-width: 2;
+
+  stroke-linecap: round;
+
+  opacity: 0.95;
+}
+
+.junctions circle {
+  fill: white;
+
+  stroke: #57aff3;
+
+  stroke-width: 2;
+}
+
+.map-city text {
+  fill: #ffffff;
+
+  font-size: 9px;
+
+  font-weight: 800;
+}
+
+.running-node {
+  fill: #20cd70;
+
+  filter: url(#nodeGlow);
+}
+
+.warning-node {
+  fill: #ff962e;
+
+  filter: url(#nodeGlow);
+}
+
+.critical-node {
+  fill: #f64c4c;
+
+  filter: url(#nodeGlow);
+}
+
+.train-pulse {
+  fill: #22d77a;
+
+  filter: url(#nodeGlow);
+}
+
+.train-pulse.second {
+  fill: #64b8ff;
+}
+
+.map-right-column {
+  display: flex;
+  flex-direction: column;
+
+  gap: 7px;
+
+  padding-top: 9px;
+}
+
+.rail-legend {
+  margin-bottom: 3px;
+
+  padding:
+    7px 8px;
+
+  font-size: 7px;
+
+  color: #d3dfeb;
+}
+
+.rail-legend div {
+  display: flex;
+  align-items: center;
+
+  gap: 6px;
+
+  margin-bottom: 5px;
+}
+
+.rail-legend i {
+  width: 7px;
+  height: 7px;
+
+  border-radius: 50%;
+}
+
+.rail-legend i.green {
+  background: #1fd572;
+}
+
+.rail-legend i.red {
+  background: #ff4d53;
+}
+
+.rail-legend i.orange {
+  background: #ff982c;
+}
+
+.rail-legend i.white {
+  background: white;
+}
+
+.rail-line-key {
+  width: 14px;
+  height: 2px;
+
+  background: #f59852;
+}
+
+.network-stat-box {
+  min-height: 53px;
+
+  display: flex;
+  align-items: center;
+
+  gap: 8px;
+
+  padding: 7px 8px;
+
+  border:
+    1px solid
+    rgba(99, 162, 215, 0.18);
+
+  border-radius: 10px;
+
+  background:
+    rgba(16, 55, 89, 0.7);
+}
+
+.stat-symbol {
+  width: 25px;
+  height: 25px;
+
+  display: grid;
+  place-items: center;
+
+  flex-shrink: 0;
+
+  border-radius: 8px;
+
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.stat-symbol.green {
+  color: #28da7c;
+}
+
+.stat-symbol.red {
+  color: #ff5d60;
+}
+
+.stat-symbol.orange {
+  color: #ff9f31;
+}
+
+.stat-symbol.blue {
+  color: #6bbaff;
+}
+
+.network-stat-box strong {
+  display: block;
+
+  font-size: 18px;
+
+  line-height: 1;
+}
+
+.network-stat-box span {
+  display: block;
+
+  margin-top: 3px;
+
+  color: #c4d3df;
+
+  font-size: 7px;
+}
+
+.network-bottom {
+  min-height: 46px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 10px;
+
+  padding-top: 10px;
+
+  border-top:
+    1px solid
+    rgba(122, 164, 201, 0.16);
+}
+
+.network-bottom > span {
+  max-width: 260px;
+
+  color: #829db5;
+
+  font-size: 6px;
+
+  line-height: 1.35;
+}
+
+.network-bottom button {
+  min-height: 34px;
+
+  display: flex;
+  align-items: center;
+
+  gap: 7px;
+
+  padding: 0 11px;
+
+  border:
+    1px solid
+    rgba(93, 168, 224, 0.25);
+
+  border-radius: 8px;
+
+  background: #103d63;
+
+  color: white;
+
+  font-size: 8px;
+  font-weight: 800;
+}
+
+/* ================================
+   LITTLE SIDE MOTTO
+================================ */
+
+.rail-motto-card {
+  position: absolute;
+
+  z-index: 6;
+
+  left: 1.3%;
+  bottom: 15.8%;
+
+  width: 95px;
+
+  padding: 11px 9px;
+
+  border-radius: 10px;
+
+  background:
+    rgba(248, 244, 235, 0.87);
+
+  border:
+    1px solid
+    rgba(94, 75, 57, 0.18);
+
+  box-shadow:
+    0 9px 18px
+    rgba(53, 39, 25, 0.09);
+
+  backdrop-filter: blur(7px);
+}
+
+.rail-motto-card span {
+  display: block;
+
+  color: #5a5b59;
+
+  font-size: 8px;
+  font-weight: 700;
+}
+
+.rail-motto-card strong {
+  display: block;
+
+  margin-top: 7px;
+
+  color: #23272c;
+
+  font-size: 9px;
+  line-height: 1.25;
+}
+
+/* ================================
+   BOTTOM FLOATING STRIP
+================================ */
+
+.benefits-floating-bar {
+  position: absolute;
+
+  z-index: 10;
+
+  left: 5%;
+  right: 2%;
+
+  bottom: 2.5%;
+
+  min-height: 90px;
+
+  display: grid;
+
+  grid-template-columns:
+    repeat(5, minmax(0, 1fr))
+    175px;
+
+  align-items: center;
+
+  padding: 10px 13px;
+
+  border:
+    1px solid
+    rgba(170, 196, 214, 0.22);
+
+  border-radius: 19px;
+
+  background:
+    linear-gradient(
+      145deg,
+      rgba(25, 35, 43, 0.94),
+      rgba(13, 25, 34, 0.96)
+    );
+
+  color: white;
+
+  box-shadow:
+    0 17px 35px
+    rgba(8, 19, 27, 0.28);
+}
+
+.benefit-cell {
+  min-height: 56px;
+
+  display: flex;
+  align-items: center;
+
+  gap: 10px;
+
+  padding: 0 12px;
+
+  border-right:
+    1px solid
+    rgba(255, 255, 255, 0.12);
+}
+
+.benefit-symbol {
+  width: 34px;
+  height: 34px;
+
+  display: grid;
+  place-items: center;
+
+  flex-shrink: 0;
+
+  border-radius: 8px;
+
+  background:
+    rgba(255, 255, 255, 0.07);
+
+  color: #f3f5f5;
+}
+
+.benefit-cell strong {
+  display: block;
+
+  font-size: 10px;
+
+  line-height: 1.2;
+}
+
+.benefit-cell span {
+  display: block;
+
+  margin-top: 4px;
+
+  color: #bec8ce;
+
+  font-size: 7px;
+}
+
+.stronger-railways {
+  padding-left: 16px;
+}
+
+.stronger-railways > span {
+  color: #a9b8c3;
+
+  font-size: 7px;
+  font-weight: 800;
+
+  letter-spacing: 0.17em;
+}
+
+.stronger-railways strong {
+  display: block;
+
+  margin-top: 5px;
+
+  font-size: 12px;
+  line-height: 1.2;
+}
+
+/* ================================
+   RESPONSIVE
+================================ */
+
+@media (max-width: 1350px) {
+  .rail-network-panel {
+    min-width: 430px;
+
+    width: 36%;
+  }
+
+  .hero-left-content {
+    width: 51%;
+  }
+
+  .landing-feature-row {
+    grid-template-columns:
+      repeat(3, minmax(0, 1fr));
+  }
+
+  .landing-feature {
+    min-height: 96px;
+  }
+}
+
+@media (max-width: 1050px) {
+  .rail-header {
+    grid-template-columns:
+      1fr auto;
+  }
+
+  .main-navigation {
+    display: none;
+  }
+
+  .railway-identity {
+    display: none;
+  }
+
+  .rail-hero {
+    height: auto;
+
+    min-height: 1050px;
+  }
+
+  .hero-left-content {
+    left: 4%;
+    top: 4%;
+
+    width: 61%;
+  }
+
+  .rail-network-panel {
+    top: 52%;
+
+    left: 4%;
+    right: 4%;
+
+    width: auto;
+
+    min-width: 0;
+
+    height: 38%;
+  }
+
+  .benefits-floating-bar {
+    display: none;
+  }
+
+  .rail-motto-card {
+    display: none;
+  }
+}
+
+@media (max-width: 720px) {
+  .header-motto {
+    display: none;
+  }
+
+  .rail-hero {
+    min-height: 1180px;
+  }
+
+  .hero-left-content {
+    right: 4%;
+
+    width: auto;
+  }
+
+  .large-brand-name {
+    font-size: 46px;
+  }
+
+  .hero-left-content h1 {
+    font-size: 39px;
+  }
+
+  .landing-feature-row {
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+  }
+
+  .hero-buttons {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .rail-network-panel {
+    top: 57%;
+
+    height: 38%;
+  }
+
+  .network-panel-main {
+    grid-template-columns: 1fr;
+  }
+
+  .map-right-column {
+    display: none;
+  }
+}

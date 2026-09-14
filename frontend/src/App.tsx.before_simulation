@@ -1,0 +1,61 @@
+import { BrowserRouter, Route, Routes } from "react-router-dom";
+
+import LandingPage from "./pages/LandingPage";
+import RoleSelectionPage from "./pages/auth/RoleSelectionPage";
+import LoginPage from "./pages/auth/LoginPage";
+import ProtectedRoute from "./routes/ProtectedRoute";
+
+import WorkerDashboard from "./pages/worker/WorkerDashboard";
+import WorkerTasks from "./pages/worker/WorkerTasks";
+import WorkerLiveMap from "./pages/worker/WorkerLiveMap";
+import WorkerApprovals from "./pages/worker/WorkerApprovals";
+import WorkerWorkLog from "./pages/worker/WorkerWorkLog";
+import WorkerSafety from "./pages/worker/WorkerSafety";
+import WorkerMessages from "./pages/worker/WorkerMessages";
+import WorkerResources from "./pages/worker/WorkerResources";
+import WorkerHelp from "./pages/worker/WorkerHelp";
+
+import ManagerDashboard from "./pages/manager/ManagerDashboard";
+import OperatorDashboard from "./pages/operator/OperatorDashboard";
+import OperatorDisruptions from "./pages/operator/OperatorDisruptions";
+import OperatorAffectedTrains from "./pages/operator/OperatorAffectedTrains";
+import OperatorAlternatives from "./pages/operator/OperatorAlternatives";
+import OperatorDecisionLog from "./pages/operator/OperatorDecisionLog";
+
+export default function App() {
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/roles" element={<RoleSelectionPage />} />
+        <Route path="/login/worker" element={<LoginPage roleType="worker" />} />
+        <Route path="/login/manager" element={<LoginPage roleType="manager" />} />
+        <Route path="/login/operator" element={<LoginPage roleType="operator" />} />
+
+        <Route element={<ProtectedRoute allowedRoles={["WORKER"]} />}>
+          <Route path="/worker" element={<WorkerDashboard />} />
+          <Route path="/worker/tasks" element={<WorkerTasks />} />
+          <Route path="/worker/map" element={<WorkerLiveMap />} />
+          <Route path="/worker/approvals" element={<WorkerApprovals />} />
+          <Route path="/worker/work-log" element={<WorkerWorkLog />} />
+          <Route path="/worker/safety" element={<WorkerSafety />} />
+          <Route path="/worker/messages" element={<WorkerMessages />} />
+          <Route path="/worker/resources" element={<WorkerResources />} />
+          <Route path="/worker/help" element={<WorkerHelp />} />
+        </Route>
+
+        <Route element={<ProtectedRoute allowedRoles={["MANAGER"]} />}>
+          <Route path="/manager" element={<ManagerDashboard />} />
+        </Route>
+
+        <Route element={<ProtectedRoute allowedRoles={["TRAIN_OPERATOR"]} />}>
+          <Route path="/operator" element={<OperatorDashboard />} />
+          <Route path="/operator/disruptions" element={<OperatorDisruptions />} />
+          <Route path="/operator/trains" element={<OperatorAffectedTrains />} />
+          <Route path="/operator/alternatives" element={<OperatorAlternatives />} />
+          <Route path="/operator/decisions" element={<OperatorDecisionLog />} />
+        </Route>
+      </Routes>
+    </BrowserRouter>
+  );
+}

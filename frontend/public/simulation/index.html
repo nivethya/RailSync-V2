@@ -1,0 +1,2616 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tambaram Junction (TBM) - Intelligent Track Allocation & Maintenance Simulation</title>
+  <style>
+    /* ==========================================================================
+       DESIGN SYSTEM - CLEAN, LIGHT, HIGH-DEFINITION RAILWAY OPERATIONS THEME
+       100% Self-Contained, No External Fonts or CDNs, No Cursive, High Contrast
+       ========================================================================== */
+    :root {
+      --bg-main: #f8fafc;
+      --bg-surface: #ffffff;
+      --bg-elevated: #f1f5f9;
+      --border-light: #e2e8f0;
+      --border-medium: #cbd5e1;
+      --border-dark: #94a3b8;
+      --text-primary: #0f172a;
+      --text-secondary: #475569;
+      --text-muted: #64748b;
+      --primary: #0284c7;
+      --primary-dark: #0369a1;
+      --primary-light: #e0f2fe;
+      --railway-maroon: #881337;
+      --railway-navy: #1e3a8a;
+      --success: #16a34a;
+      --success-light: #dcfce7;
+      --warning: #d97706;
+      --warning-light: #fef3c7;
+      --danger: #dc2626;
+      --danger-light: #fee2e2;
+      --info: #2563eb;
+      --info-light: #dbeafe;
+      --track-base: #64748b;
+      --track-sleepers: #cbd5e1;
+      --track-route: #10b981;
+      --track-occupied: #ef4444;
+      --track-maintenance: #f59e0b;
+      --platform-surface: #e2e8f0;
+      --platform-edge: #f59e0b;
+      --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+      --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.08), 0 2px 4px -2px rgba(0, 0, 0, 0.04);
+      --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.05);
+      --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.15), 0 8px 10px -6px rgba(0, 0, 0, 0.08);
+      --radius-sm: 4px;
+      --radius-md: 8px;
+      --radius-lg: 12px;
+      --radius-xl: 16px;
+      --font-stack: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: var(--font-stack);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    body {
+      background-color: var(--bg-main);
+      color: var(--text-primary);
+      overflow-x: hidden;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      font-size: 14px;
+    }
+
+    /* ==========================================================================
+       TOP OPERATIONAL HEADER BAR
+       ========================================================================== */
+    .header-bar {
+      background: linear-gradient(135deg, #ffffff 0%, #f1f5f9 100%);
+      border-bottom: 2px solid var(--border-medium);
+      padding: 10px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      box-shadow: var(--shadow-sm);
+      z-index: 50;
+      flex-shrink: 0;
+    }
+
+    .brand-section {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .ir-crest {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #1e3a8a, #881337);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #ffffff;
+      font-weight: 800;
+      font-size: 13px;
+      letter-spacing: 0.5px;
+      box-shadow: var(--shadow-md);
+      border: 2px solid #ffffff;
+      flex-shrink: 0;
+    }
+
+    .station-title h1 {
+      font-size: 17px;
+      font-weight: 800;
+      color: var(--railway-navy);
+      letter-spacing: -0.2px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .station-badge {
+      background: var(--railway-maroon);
+      color: #ffffff;
+      font-size: 10px;
+      padding: 2px 6px;
+      border-radius: var(--radius-sm);
+      font-weight: 700;
+      letter-spacing: 0.5px;
+    }
+
+    .station-title p {
+      font-size: 11.5px;
+      color: var(--text-secondary);
+      font-weight: 500;
+      margin-top: 1px;
+    }
+
+    .quick-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      padding: 6px 12px;
+      border-radius: var(--radius-md);
+      font-size: 12px;
+      font-weight: 600;
+      border: 1px solid var(--border-medium);
+      background: var(--bg-surface);
+      color: var(--text-primary);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.15s ease;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .btn:hover {
+      background: var(--bg-elevated);
+      border-color: var(--border-dark);
+      transform: translateY(-1px);
+    }
+
+    .btn:active {
+      transform: translateY(0);
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: #ffffff;
+      border-color: var(--primary-dark);
+    }
+
+    .btn-primary:hover {
+      background: var(--primary-dark);
+    }
+
+    .btn-success {
+      background: var(--success);
+      color: #ffffff;
+      border-color: #15803d;
+    }
+
+    .btn-success:hover {
+      background: #15803d;
+    }
+
+    .btn-warning {
+      background: #f59e0b;
+      color: #78350f;
+      border-color: #d97706;
+      font-weight: 700;
+    }
+
+    .btn-danger {
+      background: var(--danger);
+      color: #ffffff;
+      border-color: #b91c1c;
+    }
+
+    .btn-danger:hover {
+      background: #b91c1c;
+    }
+
+    .btn-active {
+      background: #e0f2fe;
+      border-color: #0284c7;
+      color: #0369a1;
+      font-weight: 700;
+    }
+
+    .control-divider {
+      width: 1px;
+      height: 24px;
+      background: var(--border-medium);
+      margin: 0 4px;
+    }
+
+    .mode-pill {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-medium);
+      border-radius: 20px;
+      padding: 2px 4px;
+      display: flex;
+      align-items: center;
+      gap: 2px;
+    }
+
+    .mode-pill button {
+      border: none;
+      background: none;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 4px 8px;
+      border-radius: 16px;
+      cursor: pointer;
+      color: var(--text-secondary);
+      transition: all 0.15s ease;
+    }
+
+    .mode-pill button.active {
+      background: var(--primary);
+      color: #ffffff;
+    }
+
+    .live-clock-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-medium);
+      border-radius: var(--radius-md);
+      padding: 4px 10px;
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .clock-time {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--railway-navy);
+    }
+
+    .clock-sub {
+      font-size: 10px;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    /* ==========================================================================
+       METRICS & INTELLIGENCE KPI BAR
+       ========================================================================== */
+    .kpi-bar {
+      background: #ffffff;
+      border-bottom: 1px solid var(--border-light);
+      padding: 6px 20px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 12px;
+      box-shadow: var(--shadow-sm);
+      flex-shrink: 0;
+    }
+
+    .kpi-card {
+      background: var(--bg-elevated);
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-md);
+      padding: 6px 12px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .kpi-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      flex-shrink: 0;
+    }
+
+    .kpi-icon.blue { background: var(--info-light); color: var(--info); }
+    .kpi-icon.green { background: var(--success-light); color: var(--success); }
+    .kpi-icon.amber { background: var(--warning-light); color: var(--warning); }
+    .kpi-icon.purple { background: #f3e8ff; color: #9333ea; }
+
+    .kpi-content {
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .kpi-label {
+      font-size: 10.5px;
+      color: var(--text-secondary);
+      font-weight: 600;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      overflow: hidden;
+    }
+
+    .kpi-value {
+      font-size: 13.5px;
+      font-weight: 800;
+      color: var(--text-primary);
+      display: flex;
+      align-items: baseline;
+      gap: 4px;
+    }
+
+    .kpi-delta {
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--success);
+    }
+
+    /* ==========================================================================
+       MAIN VIEWPORT: SPLIT BETWEEN SCHEMATIC CANVAS & REAL-TIME DASHBOARD
+       ========================================================================== */
+    .main-container {
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .schematic-viewport {
+      position: relative;
+      flex: 1;
+      background: #f8fafc;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      user-select: none;
+    }
+
+    #schematicCanvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+      cursor: grab;
+    }
+
+    #schematicCanvas:active {
+      cursor: grabbing;
+    }
+
+    /* Canvas Overlays & Floating HUD */
+    .viewport-hud {
+      position: absolute;
+      top: 12px;
+      left: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      pointer-events: none;
+      z-index: 20;
+    }
+
+    .hud-chip {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(8px);
+      border: 1px solid var(--border-medium);
+      padding: 6px 12px;
+      border-radius: var(--radius-md);
+      font-size: 11.5px;
+      font-weight: 600;
+      color: var(--text-primary);
+      box-shadow: var(--shadow-md);
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      pointer-events: auto;
+      max-width: 380px;
+    }
+
+    .hud-chip.alert {
+      border-left: 4px solid var(--danger);
+      background: #fff5f5;
+    }
+
+    .hud-chip.notice {
+      border-left: 4px solid var(--primary);
+    }
+
+    .hud-chip.maintenance {
+      border-left: 4px solid var(--warning);
+      background: #fffdf5;
+    }
+
+    .canvas-controls-overlay {
+      position: absolute;
+      bottom: 12px;
+      right: 14px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(255, 255, 255, 0.92);
+      backdrop-filter: blur(6px);
+      border: 1px solid var(--border-medium);
+      padding: 4px 8px;
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-md);
+      z-index: 20;
+    }
+
+    .canvas-legend {
+      position: absolute;
+      bottom: 12px;
+      left: 14px;
+      background: rgba(255, 255, 255, 0.94);
+      backdrop-filter: blur(6px);
+      border: 1px solid var(--border-medium);
+      padding: 6px 12px;
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-md);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 11px;
+      font-weight: 600;
+      z-index: 20;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      color: var(--text-secondary);
+    }
+
+    .legend-color {
+      width: 14px;
+      height: 6px;
+      border-radius: 2px;
+    }
+
+    /* Video Presentation Narration Banner */
+    .video-narration-banner {
+      position: absolute;
+      top: 12px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #ffffff;
+      border: 2px solid var(--primary);
+      border-radius: var(--radius-xl);
+      padding: 10px 24px;
+      box-shadow: var(--shadow-xl);
+      z-index: 40;
+      display: none;
+      align-items: center;
+      gap: 16px;
+      max-width: 820px;
+      width: 90%;
+      animation: slideDown 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .video-narration-banner.active {
+      display: flex;
+    }
+
+    @keyframes slideDown {
+      from { transform: translate(-50%, -20px); opacity: 0; }
+      to { transform: translate(-50%, 0); opacity: 1; }
+    }
+
+    .narration-badge {
+      background: var(--primary);
+      color: #ffffff;
+      font-size: 11px;
+      font-weight: 800;
+      padding: 4px 10px;
+      border-radius: 20px;
+      letter-spacing: 0.5px;
+      flex-shrink: 0;
+    }
+
+    .narration-text {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-primary);
+      line-height: 1.4;
+      flex: 1;
+    }
+
+    .narration-controls {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-shrink: 0;
+    }
+
+    /* ==========================================================================
+       BOTTOM INSPECTION & TIMETABLE CONTROL DECK
+       ========================================================================== */
+    .control-deck {
+      height: 270px;
+      background: #ffffff;
+      border-top: 2px solid var(--border-medium);
+      display: grid;
+      grid-template-columns: 1.2fr 1fr 1fr;
+      box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.03);
+      flex-shrink: 0;
+      z-index: 10;
+    }
+
+    .deck-panel {
+      display: flex;
+      flex-direction: column;
+      border-right: 1px solid var(--border-light);
+      overflow: hidden;
+    }
+
+    .deck-panel:last-child {
+      border-right: none;
+    }
+
+    .panel-header {
+      background: var(--bg-elevated);
+      padding: 8px 14px;
+      border-bottom: 1px solid var(--border-light);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+    }
+
+    .panel-header h3 {
+      font-size: 12.5px;
+      font-weight: 700;
+      color: var(--railway-navy);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .panel-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 10px 14px;
+    }
+
+    /* Timetable Table */
+    .train-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 11.5px;
+    }
+
+    .train-table th {
+      text-align: left;
+      padding: 6px 8px;
+      background: #f8fafc;
+      color: var(--text-secondary);
+      font-weight: 700;
+      border-bottom: 1px solid var(--border-medium);
+      position: sticky;
+      top: 0;
+    }
+
+    .train-table td {
+      padding: 6px 8px;
+      border-bottom: 1px solid var(--border-light);
+      color: var(--text-primary);
+      font-weight: 500;
+      vertical-align: middle;
+    }
+
+    .train-table tr:hover {
+      background: #f0f9ff;
+    }
+
+    .train-table tr.active-row {
+      background: #e0f2fe;
+      font-weight: 600;
+    }
+
+    .tag {
+      display: inline-block;
+      padding: 2px 6px;
+      border-radius: var(--radius-sm);
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.3px;
+    }
+
+    .tag-emu { background: #fef3c7; color: #92400e; border: 1px solid #fde68a; }
+    .tag-exp { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
+    .tag-vb  { background: #e0e7ff; color: #3730a3; border: 1px solid #c7d2fe; }
+    .tag-maint { background: #ffedd5; color: #9a3412; border: 1px solid #fed7aa; }
+
+    .tag-status-moving { background: #dcfce7; color: #166534; }
+    .tag-status-docked { background: #e0f2fe; color: #075985; }
+    .tag-status-rerouted { background: #fae8ff; color: #86198f; font-weight: 800; }
+    .tag-status-waiting { background: #fef9c3; color: #854d0e; }
+
+    /* Integrated Maintenance Comparison Box */
+    .maint-comparison-box {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .gantt-chart {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-medium);
+      border-radius: var(--radius-md);
+      padding: 8px 10px;
+    }
+
+    .gantt-title {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-secondary);
+      margin-bottom: 6px;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .gantt-bars {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .gantt-row {
+      display: flex;
+      align-items: center;
+      font-size: 10.5px;
+    }
+
+    .gantt-label {
+      width: 105px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      flex-shrink: 0;
+    }
+
+    .gantt-track {
+      flex: 1;
+      height: 16px;
+      background: #e2e8f0;
+      border-radius: var(--radius-sm);
+      position: relative;
+      overflow: hidden;
+      display: flex;
+    }
+
+    .gantt-segment {
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #ffffff;
+      font-size: 9px;
+      font-weight: 700;
+      overflow: hidden;
+      white-space: nowrap;
+    }
+
+    .gantt-segment.pway { background: #d97706; }
+    .gantt-segment.ohe { background: #0284c7; }
+    .gantt-segment.sig { background: #7c3aed; }
+    .gantt-segment.unified { background: linear-gradient(90deg, #16a34a, #059669); }
+
+    /* Interactive Dispatcher Controls */
+    .dispatch-actions-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .action-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-medium);
+      border-radius: var(--radius-md);
+      padding: 8px 10px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .action-card:hover {
+      border-color: var(--primary);
+      background: #f0f9ff;
+      transform: translateY(-1px);
+    }
+
+    .action-card h4 {
+      font-size: 11.5px;
+      font-weight: 700;
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .action-card p {
+      font-size: 10px;
+      color: var(--text-secondary);
+      line-height: 1.3;
+    }
+
+    /* ==========================================================================
+       MODAL DIALOG: USER TRACK ALLOCATION DECISION PROMPT
+       "U NEED TO ASK THE USER FOR ALLOCATION OF ORDER IN TRAIN TRACK WHETHER NEED TO CHANGE THE TRACK OR NOT"
+       ========================================================================== */
+    .modal-backdrop {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(15, 23, 42, 0.6);
+      backdrop-filter: blur(4px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      animation: fadeIn 0.2s ease-out;
+    }
+
+    .modal-backdrop.active {
+      display: flex;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    .modal-card {
+      background: #ffffff;
+      border: 2px solid var(--primary);
+      border-radius: var(--radius-xl);
+      width: 640px;
+      max-width: 92vw;
+      box-shadow: var(--shadow-xl);
+      overflow: hidden;
+      animation: popIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      display: flex;
+      flex-direction: column;
+    }
+
+    @keyframes popIn {
+      from { transform: scale(0.92) translateY(10px); opacity: 0; }
+      to { transform: scale(1) translateY(0); opacity: 1; }
+    }
+
+    .modal-header {
+      background: linear-gradient(135deg, #0369a1 0%, #1e3a8a 100%);
+      color: #ffffff;
+      padding: 14px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .modal-header h2 {
+      font-size: 15px;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .modal-timer {
+      background: rgba(255, 255, 255, 0.2);
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .modal-body {
+      padding: 18px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .conflict-banner {
+      background: #fff7ed;
+      border: 1px solid #fed7aa;
+      border-left: 4px solid var(--warning);
+      border-radius: var(--radius-md);
+      padding: 10px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .conflict-banner h4 {
+      font-size: 12.5px;
+      font-weight: 800;
+      color: #9a3412;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .conflict-banner p {
+      font-size: 12px;
+      color: #7c2d12;
+      line-height: 1.4;
+    }
+
+    .conflict-diagram {
+      background: #f8fafc;
+      border: 1px solid var(--border-medium);
+      border-radius: var(--radius-md);
+      padding: 12px;
+      display: grid;
+      grid-template-columns: 1fr 40px 1fr;
+      align-items: center;
+      gap: 8px;
+      text-align: center;
+    }
+
+    .diagram-col {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      padding: 8px;
+      border-radius: var(--radius-sm);
+      background: #ffffff;
+      border: 1px solid var(--border-light);
+    }
+
+    .diagram-col.conflict {
+      background: #fee2e2;
+      border-color: #fca5a5;
+    }
+
+    .diagram-col.proposed {
+      background: #dcfce7;
+      border-color: #86efac;
+    }
+
+    .diagram-arrow {
+      font-size: 18px;
+      color: var(--text-muted);
+      font-weight: 800;
+    }
+
+    .modal-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: 4px;
+    }
+
+    .option-btn {
+      padding: 10px 14px;
+      border-radius: var(--radius-lg);
+      border: 2px solid var(--border-medium);
+      background: var(--bg-surface);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      transition: all 0.15s ease;
+      text-align: left;
+    }
+
+    .option-btn:hover {
+      border-color: var(--primary);
+      background: #f0f9ff;
+      transform: translateX(2px);
+    }
+
+    .option-btn.recommended {
+      border-color: var(--success);
+      background: #f0fdf4;
+    }
+
+    .option-btn.recommended:hover {
+      background: #dcfce7;
+      border-color: #16a34a;
+    }
+
+    .option-content h5 {
+      font-size: 12.5px;
+      font-weight: 800;
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .option-content p {
+      font-size: 11px;
+      color: var(--text-secondary);
+      margin-top: 2px;
+    }
+
+    .option-badge {
+      font-size: 10px;
+      font-weight: 800;
+      padding: 3px 8px;
+      border-radius: 12px;
+      background: #dcfce7;
+      color: #166534;
+      flex-shrink: 0;
+    }
+
+    .manual-track-select {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 6px;
+      padding-top: 8px;
+      border-top: 1px dashed var(--border-medium);
+    }
+
+    .manual-track-select label {
+      font-size: 11.5px;
+      font-weight: 700;
+      color: var(--text-secondary);
+      white-space: nowrap;
+    }
+
+    .track-pills-row {
+      display: flex;
+      gap: 4px;
+      flex-wrap: wrap;
+    }
+
+    .track-pill-btn {
+      padding: 4px 8px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border-medium);
+      background: var(--bg-surface);
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+      color: var(--railway-navy);
+      transition: all 0.1s ease;
+    }
+
+    .track-pill-btn:hover {
+      background: var(--primary-light);
+      border-color: var(--primary);
+    }
+
+    /* Scrollbars */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #f1f5f9;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 3px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ========================================================================
+       TOP OPERATIONAL HEADER
+       ======================================================================== -->
+  <header class="header-bar">
+    <div class="brand-section">
+      <div class="ir-crest" title="Indian Railways - Southern Railway Zone">SR</div>
+      <div class="station-title">
+        <h1>
+          TAMBARAM JUNCTION (TBM)
+          <span class="station-badge">SOUTHERN RAILWAY</span>
+        </h1>
+        <p>INTELLIGENT DYNAMIC TRACK ALLOCATION & MULTI-DEPARTMENT MAINTENANCE OPTIMIZATION</p>
+      </div>
+    </div>
+
+    <!-- Quick Simulation & Presentation Controls -->
+    <div class="quick-actions">
+      <!-- Guided Video Presentation Mode -->
+      <button class="btn btn-primary" id="btnVideoMode" onclick="toggleVideoMode()" title="Step-by-step Presentation Mode with narration">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+        <span>Working Video Tour</span>
+      </button>
+
+      <!-- Scenario Trigger: Track 1 Conflict & Re-route -->
+      <button class="btn btn-warning" id="btnTriggerConflict" onclick="triggerTrack1ConflictScenario()" title="Simulate 2nd train arriving on Track 1 and dynamic re-routing">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6L6 18M6 6l12 12"/></svg>
+        <span>Trigger Track 1 Conflict</span>
+      </button>
+
+      <!-- Maintenance Mega Block Trigger -->
+      <button class="btn btn-active" id="btnTriggerMaint" onclick="toggleMaintenanceBlock()" title="Toggle 3-in-1 Unified Maintenance Block on Track 2">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+        <span>Toggle Unified Mega Block</span>
+      </button>
+
+      <div class="control-divider"></div>
+
+      <!-- Playback Controls -->
+      <button class="btn" id="btnPlayPause" onclick="togglePlayPause()" title="Play / Pause Simulation">
+        <span id="playIcon">⏸</span>
+        <span id="playText">Pause</span>
+      </button>
+
+      <button class="btn" onclick="stepSimulation()" title="Step Ahead 1 Frame">
+        ⏭ Step
+      </button>
+
+      <!-- Speed Control -->
+      <div class="mode-pill" title="Simulation Speed Multiplier">
+        <button class="active" onclick="setSpeed(1, this)">1x</button>
+        <button onclick="setSpeed(2, this)">2x</button>
+        <button onclick="setSpeed(5, this)">5x</button>
+      </div>
+
+      <div class="control-divider"></div>
+
+      <!-- Dispatcher Mode: Interactive User Prompt vs Auto AI -->
+      <div class="mode-pill" title="Choose whether to prompt the operator for track allocation orders">
+        <button id="modePromptBtn" class="active" onclick="setDispatcherMode('prompt')">Ask Operator</button>
+        <button id="modeAutoBtn" onclick="setDispatcherMode('auto')">Auto AI</button>
+      </div>
+
+      <!-- Audio Mute/Unmute -->
+      <button class="btn" id="btnAudio" onclick="toggleAudio()" title="Toggle Station Chimes & Audio Effects">
+        🔊 Sound ON
+      </button>
+
+      <!-- Reset Simulation -->
+      <button class="btn" onclick="resetSimulation()" title="Reset All Trains & Yard State">
+        🔄 Reset
+      </button>
+    </div>
+
+    <!-- Live System Clock -->
+    <div class="live-clock-card">
+      <div class="clock-time" id="liveClockDisplay">08:45:20 IST</div>
+      <div class="clock-sub">TBM CENTRAL INTERLOCKING</div>
+    </div>
+  </header>
+
+  <!-- ========================================================================
+       INTELLIGENCE & KPI METRICS BAR
+       ======================================================================== -->
+  <div class="kpi-bar">
+    <div class="kpi-card">
+      <div class="kpi-icon green">⏱</div>
+      <div class="kpi-content">
+        <div class="kpi-label">Maintenance Downtime Saved</div>
+        <div class="kpi-value">
+          <span id="kpiDowntimeSaved">66.7%</span>
+          <span class="kpi-delta">(8.0 hrs saved)</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="kpi-card">
+      <div class="kpi-icon blue">🛡️</div>
+      <div class="kpi-content">
+        <div class="kpi-label">Collisions & Deadlocks Prevented</div>
+        <div class="kpi-value">
+          <span id="kpiConflictsPrevented">100% Zero</span>
+          <span class="kpi-delta">(Fail-Safe)</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="kpi-card">
+      <div class="kpi-icon amber">🔄</div>
+      <div class="kpi-content">
+        <div class="kpi-label">Dynamic Track Diversions</div>
+        <div class="kpi-value">
+          <span id="kpiRerouteCount">2 Completed</span>
+          <span class="kpi-delta">0 min wait</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="kpi-card">
+      <div class="kpi-icon purple">📊</div>
+      <div class="kpi-content">
+        <div class="kpi-label">Tambaram Track Asset Availability</div>
+        <div class="kpi-value">
+          <span id="kpiAssetAvailability">98.5%</span>
+          <span class="kpi-delta">+24.2% AI Boost</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================
+       MAIN SIMULATION CANVAS VIEWPORT
+       ======================================================================== -->
+  <div class="main-container">
+    <div class="schematic-viewport" id="viewportContainer">
+      <canvas id="schematicCanvas"></canvas>
+
+      <!-- Video Tour Narration Banner -->
+      <div class="video-narration-banner" id="videoBanner">
+        <span class="narration-badge" id="videoStepBadge">STEP 1 OF 6</span>
+        <span class="narration-text" id="videoStepText">
+          Welcome to the Tambaram Railway Station Intelligent Maintenance & Dynamic Routing Simulation.
+        </span>
+        <div class="narration-controls">
+          <button class="btn" onclick="prevVideoStep()">◀ Prev</button>
+          <button class="btn btn-primary" onclick="nextVideoStep()">Next ▶</button>
+          <button class="btn btn-danger" onclick="stopVideoMode()">Exit Tour</button>
+        </div>
+      </div>
+
+      <!-- Real-time Status Floating Chips -->
+      <div class="viewport-hud">
+        <div class="hud-chip notice" id="hudStatus">
+          <span>🟢 <strong>Interlocking Online:</strong> Automatic Block Signaling Active. Solid Interlock Safety.</span>
+        </div>
+        <div class="hud-chip alert" id="hudConflictAlert" style="display: none;">
+          <span>⚠️ <strong>Conflict Warning:</strong> Approaching train on occupied Track 1. Awaiting reroute order.</span>
+        </div>
+        <div class="hud-chip maintenance" id="hudMaintenanceNotice">
+          <span>🔧 <strong>Active Mega Block:</strong> Platform 2 (Civil + Catenary + Signal Integrated Window).</span>
+        </div>
+      </div>
+
+      <!-- Legend for Track & Signals -->
+      <div class="canvas-legend">
+        <div class="legend-item"><div class="legend-color" style="background: #64748b;"></div> Clear Track</div>
+        <div class="legend-item"><div class="legend-color" style="background: #10b981;"></div> Locked Route</div>
+        <div class="legend-item"><div class="legend-color" style="background: #ef4444;"></div> Occupied Block</div>
+        <div class="legend-item"><div class="legend-color" style="background: #f59e0b;"></div> Maintenance Block</div>
+        <div class="legend-item">🟢/🟡/🔴 Signals</div>
+      </div>
+
+      <!-- Canvas Pan/Zoom Controls -->
+      <div class="canvas-controls-overlay">
+        <button class="btn" onclick="resetView()" title="Fit Station To Screen">Fit View</button>
+        <button class="btn" onclick="zoomView(1.2)" title="Zoom In">+</button>
+        <button class="btn" onclick="zoomView(0.8)" title="Zoom Out">-</button>
+      </div>
+    </div>
+
+    <!-- ======================================================================
+         BOTTOM CONTROL & METRICS DECK
+         ====================================================================== -->
+    <div class="control-deck">
+      <!-- Left: Real-World Tambaram Timetable -->
+      <div class="deck-panel">
+        <div class="panel-header">
+          <h3>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            Tambaram Station Live Train Movements
+          </h3>
+          <span class="tag tag-emu">Real Southern Railway Data</span>
+        </div>
+        <div class="panel-body" style="padding: 0;">
+          <table class="train-table">
+            <thead>
+              <tr>
+                <th>Train No. / Name</th>
+                <th>Origin / Dest</th>
+                <th>Assigned Track</th>
+                <th>Current Status</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="trainTableBody">
+              <!-- Dynamically populated rows -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Middle: Integrated Maintenance Optimization Engine -->
+      <div class="deck-panel">
+        <div class="panel-header">
+          <h3>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+            Unified 3-in-1 Maintenance Optimization
+          </h3>
+          <span class="tag tag-maint" id="maintStatusTag">Track 2 Active</span>
+        </div>
+        <div class="panel-body">
+          <div class="maint-comparison-box">
+            <!-- Gantt Comparison -->
+            <div class="gantt-chart">
+              <div class="gantt-title">
+                <span>Traditional Disjointed Maintenance</span>
+                <span style="color: var(--danger); font-weight: 800;">12 Hours Total Downtime</span>
+              </div>
+              <div class="gantt-bars">
+                <div class="gantt-row">
+                  <span class="gantt-label">Civil (P-Way):</span>
+                  <div class="gantt-track">
+                    <div class="gantt-segment pway" style="width: 33.3%;">4h Tamping</div>
+                  </div>
+                </div>
+                <div class="gantt-row">
+                  <span class="gantt-label">Electrical (TRD):</span>
+                  <div class="gantt-track">
+                    <div class="gantt-segment ohe" style="margin-left: 33.3%; width: 33.3%;">4h Catenary</div>
+                  </div>
+                </div>
+                <div class="gantt-row">
+                  <span class="gantt-label">Signalling (S&T):</span>
+                  <div class="gantt-track">
+                    <div class="gantt-segment sig" style="margin-left: 66.6%; width: 33.3%;">4h Point Tests</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Optimized Unified Gantt -->
+            <div class="gantt-chart" style="border-color: var(--success); background: #f0fdf4;">
+              <div class="gantt-title">
+                <span>Integrated Unified AI Mega Window</span>
+                <span style="color: var(--success); font-weight: 800;">Only 4 Hours (66.7% Saved)</span>
+              </div>
+              <div class="gantt-row">
+                <span class="gantt-label">Combined Mega Block:</span>
+                <div class="gantt-track">
+                  <div class="gantt-segment unified" style="width: 100%;">
+                    4h Unified (P-Way + TRD + S&T Concurrent Execution)
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div style="font-size: 11px; color: var(--text-secondary); line-height: 1.35; margin-top: 2px;">
+              <strong>Result:</strong> Trains are dynamically routed via Platform 3 & 4. Zero passenger service cancellations or stationary bottlenecks.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: Interactive Operator Actions & Yard Controls -->
+      <div class="deck-panel">
+        <div class="panel-header">
+          <h3>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+            Dispatcher Control Center
+          </h3>
+          <span class="tag tag-status-moving">Interactive Station Master</span>
+        </div>
+        <div class="panel-body">
+          <div class="dispatch-actions-grid">
+            <div class="action-card" onclick="triggerTrack1ConflictScenario()">
+              <h4>🔀 Track 1 Conflict Demo</h4>
+              <p>Dock Train 1 on PF 1; send Train 2 to trigger dynamic reroute modal.</p>
+            </div>
+
+            <div class="action-card" onclick="spawnTrain('12605', 'Pallavan Exp', 'exp', 1, 5)">
+              <h4>🚆 Dispatch Pallavan Exp</h4>
+              <p>Inject 12605 Karaikkudi Express onto Main Line to PF 5.</p>
+            </div>
+
+            <div class="action-card" onclick="spawnTrain('20665', 'Vande Bharat', 'vb', -1, 6)">
+              <h4>⚡ Dispatch Vande Bharat</h4>
+              <p>Inject 20665 Tirunelveli VB northbound through PF 6.</p>
+            </div>
+
+            <div class="action-card" onclick="toggleMaintenanceBlock()">
+              <h4>🛠️ Move Work Zone</h4>
+              <p>Toggle maintenance block between Platform 2 and Platform 4.</p>
+            </div>
+          </div>
+
+          <div style="margin-top: 10px; padding: 8px; background: var(--bg-elevated); border-radius: var(--radius-md); font-size: 11px;">
+            <strong>Safety Interlocking:</strong> Multi-Aspect Signals (MAS) strictly enforce minimum 2-block headway. Switch points lock mechanically before signals display green.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================
+       INTERACTIVE USER DECISION MODAL: TRACK ALLOCATION ORDER
+       "U NEED TO ASK THE USER FOR ALLOCATION OF ORDER IN TRAIN TRACK WHETHER NEED TO CHANGE THE TRACK OR NOT"
+       ======================================================================== -->
+  <div class="modal-backdrop" id="decisionModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2>
+          <span>⚠️</span>
+          OPERATOR DECISION: TRACK ALLOCATION CONFLICT
+        </h2>
+        <div class="modal-timer" id="modalTimer">Auto in 15s</div>
+      </div>
+
+      <div class="modal-body">
+        <!-- Conflict explanation banner -->
+        <div class="conflict-banner">
+          <h4>
+            <span>🛑</span>
+            Track 1 (Platform 1) Bottleneck Imminent
+          </h4>
+          <p id="conflictDescText">
+            <strong>Train 12635 Vaigai Superfast Express</strong> is arriving from Chennai Egmore on Track 1. 
+            However, <strong>Suburban Local 40015</strong> is currently docked on Platform 1.
+          </p>
+        </div>
+
+        <!-- Visual Conflict Diagram -->
+        <div class="conflict-diagram">
+          <div class="diagram-col conflict">
+            <span style="font-size: 10.5px; font-weight: 700; color: #991b1b;">CURRENT ALLOCATION</span>
+            <strong style="font-size: 13px; color: #7f1d1d;">Platform 1 (Track 1)</strong>
+            <span style="font-size: 11px; color: #b91c1c;">⚠️ OCCUPIED by EMU 40015</span>
+          </div>
+
+          <div class="diagram-arrow">➔</div>
+
+          <div class="diagram-col proposed">
+            <span style="font-size: 10.5px; font-weight: 700; color: #166534;">AI RECOMMENDED ROUTE</span>
+            <strong style="font-size: 13px; color: #14532d;">Platform 3 via Crossover XN-2</strong>
+            <span style="font-size: 11px; color: #15803d;">✅ Clear Track | 0s Delay</span>
+          </div>
+        </div>
+
+        <div style="font-size: 12px; font-weight: 700; color: var(--text-primary);">
+          Select Operational Action for Approaching Train 12635:
+        </div>
+
+        <!-- Interactive Decision Options -->
+        <div class="modal-actions">
+          <!-- Recommended Option: Reroute to Track 3 -->
+          <button class="option-btn recommended" onclick="resolveUserDecision('reroute_p3')">
+            <div class="option-content">
+              <h5>
+                <span>✅</span>
+                Reroute to Platform 3 via Crossover XN-2
+                <span class="option-badge">AI RECOMMENDED</span>
+              </h5>
+              <p>Re-routes smoothly via North crossover scissors, bypasses Track 1, then returns to Down Main after clearance. Prevents train halt.</p>
+            </div>
+            <div style="font-size: 18px; color: var(--success); font-weight: 800;">➔</div>
+          </button>
+
+          <!-- Alternative Option: Hold at Home Signal -->
+          <button class="option-btn" onclick="resolveUserDecision('hold_signal')">
+            <div class="option-content">
+              <h5>
+                <span>🛑</span>
+                Keep on Track 1 (Hold at Home Signal S-2)
+              </h5>
+              <p>Train waits at outer signal until EMU 40015 completes passenger boarding and clears the block. (Adds ~8 mins delay).</p>
+            </div>
+            <div style="font-size: 18px; color: var(--text-muted); font-weight: 800;">➔</div>
+          </button>
+
+          <!-- Alternative Option: Manual Custom Platform Assignment -->
+          <div class="manual-track-select">
+            <label>Or Assign to Alternate Platform:</label>
+            <div class="track-pills-row">
+              <button class="track-pill-btn" onclick="resolveUserDecision('reroute_custom', 2)">PF 2 (Loop)</button>
+              <button class="track-pill-btn" onclick="resolveUserDecision('reroute_custom', 4)">PF 4 (Main)</button>
+              <button class="track-pill-btn" onclick="resolveUserDecision('reroute_custom', 5)">PF 5 (Express)</button>
+              <button class="track-pill-btn" onclick="resolveUserDecision('reroute_custom', 6)">PF 6 (Through)</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================
+       EMBEDDED SOUND SYNTHESIZER (WEB AUDIO API - 100% OFFLINE / CORS FREE)
+       ======================================================================== -->
+  <script>
+    class RailwayAudioEngine {
+      constructor() {
+        this.ctx = null;
+        this.muted = false;
+      }
+
+      init() {
+        if (!this.ctx) {
+          const AudioContext = window.AudioContext || window.webkitAudioContext;
+          if (AudioContext) {
+            this.ctx = new AudioContext();
+          }
+        }
+        if (this.ctx && this.ctx.state === 'suspended') {
+          this.ctx.resume();
+        }
+      }
+
+      // Classic Indian Railways Station Chime (Three-tone ding-dong)
+      playStationChime() {
+        if (this.muted) return;
+        this.init();
+        if (!this.ctx) return;
+
+        const now = this.ctx.currentTime;
+        const notes = [
+          { freq: 587.33, time: 0, dur: 0.35 },    // D5
+          { freq: 739.99, time: 0.3, dur: 0.35 },  // F#5
+          { freq: 880.00, time: 0.6, dur: 0.6 }    // A5
+        ];
+
+        notes.forEach(n => {
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(n.freq, now + n.time);
+
+          gain.gain.setValueAtTime(0, now + n.time);
+          gain.gain.linearRampToValueAtTime(0.2, now + n.time + 0.05);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + n.time + n.dur);
+
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start(now + n.time);
+          osc.stop(now + n.time + n.dur);
+        });
+      }
+
+      // Train Horn / Whistle
+      playTrainHorn() {
+        if (this.muted) return;
+        this.init();
+        if (!this.ctx) return;
+
+        const now = this.ctx.currentTime;
+        const freqs = [311.13, 370.00, 466.16]; // Eb4 chord
+        freqs.forEach(f => {
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = 'sawtooth';
+          osc.frequency.setValueAtTime(f, now);
+
+          // Soft low-pass filter for realistic acoustic horn
+          const filter = this.ctx.createBiquadFilter();
+          filter.type = 'lowpass';
+          filter.frequency.setValueAtTime(1200, now);
+
+          gain.gain.setValueAtTime(0, now);
+          gain.gain.linearRampToValueAtTime(0.08, now + 0.1);
+          gain.setValueAtTime(0.08, now + 0.8);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 1.2);
+
+          osc.connect(filter);
+          filter.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start(now);
+          osc.stop(now + 1.25);
+        });
+      }
+
+      // Point switch motor relay click
+      playSwitchClick() {
+        if (this.muted) return;
+        this.init();
+        if (!this.ctx) return;
+
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(140, now);
+        osc.frequency.exponentialRampToValueAtTime(40, now + 0.08);
+
+        gain.gain.setValueAtTime(0.2, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
+
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.09);
+      }
+    }
+
+    const sound = new RailwayAudioEngine();
+    function toggleAudio() {
+      sound.muted = !sound.muted;
+      document.getElementById('btnAudio').textContent = sound.muted ? '🔇 Sound OFF' : '🔊 Sound ON';
+      if (!sound.muted) {
+        sound.init();
+        sound.playStationChime();
+      }
+    }
+  </script>
+
+  <!-- ========================================================================
+       TAMBARAM JUNCTION SCHEMATIC & SIMULATION CORE ENGINE
+       ======================================================================== -->
+  <script>
+    // System State
+    const SIM = {
+      canvas: null,
+      ctx: null,
+      width: 1400,
+      height: 600,
+      viewOffset: { x: 0, y: 0 },
+      zoom: 1.0,
+      isDragging: false,
+      dragStart: { x: 0, y: 0 },
+      running: true,
+      speed: 1,
+      lastTimestamp: 0,
+      clockTime: new Date(2026, 8, 7, 8, 45, 20),
+      dispatcherMode: 'prompt', // 'prompt' (ask user) or 'auto'
+      maintenanceActive: true,
+      maintenancePlatform: 2, // PF 2 has active unified block
+      downtimeSavedMinutes: 480,
+      reroutesCompleted: 2,
+      conflictsPrevented: 14,
+      isPromptOpen: false,
+      promptTimer: 15,
+      promptInterval: null,
+      pendingConflictTrain: null,
+      videoTour: {
+        active: false,
+        step: 0,
+        timer: null
+      }
+    };
+
+    // Tambaram Station Geometry: 8 Platforms & Interlocking Crossovers
+    const STATION = {
+      name: "Tambaram (TBM)",
+      xStart: 80,
+      xEnd: 1320,
+      platformXStart: 450,
+      platformXEnd: 950,
+      tracks: [
+        { id: 1, name: "PF 1 (Suburban Term / DN)", y: 140, type: "suburban", platform: 1, direction: 1 },
+        { id: 2, name: "PF 2 (Suburban Island / UP)", y: 185, type: "suburban", platform: 2, direction: -1 },
+        { id: 3, name: "PF 3 (Suburban Through / DN)", y: 245, type: "suburban", platform: 3, direction: 1 },
+        { id: 4, name: "PF 4 (Mainline Fast / UP)", y: 290, type: "mainline", platform: 4, direction: -1 },
+        { id: 5, name: "PF 5 (Mail/Express DN)", y: 350, type: "express", platform: 5, direction: 1 },
+        { id: 6, name: "PF 6 (Mail/Express UP)", y: 395, type: "express", platform: 6, direction: -1 },
+        { id: 7, name: "PF 7 (Express Originating)", y: 455, type: "loop", platform: 7, direction: 1 },
+        { id: 8, name: "PF 8 (Stabling / Yard Loop)", y: 500, type: "yard", platform: 8, direction: 1 }
+      ],
+      // North Approach Crossovers (Connecting Beach Lines to Platforms)
+      northCrossovers: [
+        { id: "XN1", fromTrack: 1, toTrack: 2, x1: 220, x2: 280, active: false },
+        { id: "XN2", fromTrack: 1, toTrack: 3, x1: 290, x2: 380, active: false },
+        { id: "XN3", fromTrack: 3, toTrack: 4, x1: 240, x2: 300, active: false },
+        { id: "XN4", fromTrack: 3, toTrack: 5, x1: 310, x2: 410, active: false },
+        { id: "XN5", fromTrack: 5, toTrack: 6, x1: 250, x2: 320, active: false }
+      ],
+      // South Approach Crossovers (Connecting Platforms to Chengalpattu Lines)
+      southCrossovers: [
+        { id: "XS1", fromTrack: 1, toTrack: 2, x1: 1020, x2: 1080, active: false },
+        { id: "XS2", fromTrack: 3, toTrack: 1, x1: 1010, x2: 1100, active: false },
+        { id: "XS3", fromTrack: 4, toTrack: 3, x1: 1040, x2: 1120, active: false },
+        { id: "XS4", fromTrack: 5, toTrack: 6, x1: 1030, x2: 1110, active: false },
+        { id: "XS5", fromTrack: 6, toTrack: 4, x1: 1090, x2: 1170, active: false }
+      ],
+      // Signals along the tracks
+      signals: [
+        { id: "S-DN-HOME-1", trackId: 1, x: 200, aspect: "green", direction: 1 },
+        { id: "S-DN-STARTER-1", trackId: 1, x: 960, aspect: "red", direction: 1 },
+        { id: "S-UP-STARTER-2", trackId: 2, x: 440, aspect: "red", direction: -1 },
+        { id: "S-DN-HOME-3", trackId: 3, x: 210, aspect: "green", direction: 1 },
+        { id: "S-DN-STARTER-3", trackId: 3, x: 960, aspect: "green", direction: 1 },
+        { id: "S-UP-STARTER-4", trackId: 4, x: 440, aspect: "green", direction: -1 },
+        { id: "S-DN-HOME-5", trackId: 5, x: 210, aspect: "green", direction: 1 },
+        { id: "S-DN-STARTER-5", trackId: 5, x: 960, aspect: "green", direction: 1 },
+        { id: "S-UP-STARTER-6", trackId: 6, x: 440, aspect: "green", direction: -1 }
+      ]
+    };
+
+    // Live Trains in Tambaram System
+    const TRAINS = [
+      {
+        id: "EMU-40015",
+        number: "40015",
+        name: "Beach - Tambaram Local",
+        type: "emu",
+        length: 140,
+        x: 620, // Docked at Platform 1
+        speed: 0,
+        targetSpeed: 0,
+        trackId: 1,
+        targetTrackId: 1,
+        direction: 1,
+        state: "docked", // 'moving', 'docked', 'waiting_signal', 'diverting'
+        dockTimer: 45, // Seconds remaining at platform
+        color: "#92400e", // Suburban Maroon
+        accentColor: "#fef3c7",
+        origin: "MSB (Beach)",
+        dest: "TBM (Tambaram)",
+        assignedTrack: 1,
+        liveTrack: 1,
+        coaches: 9
+      },
+      {
+        id: "EXP-12635",
+        number: "12635",
+        name: "Vaigai Superfast Express",
+        type: "exp",
+        length: 190,
+        x: -120, // Approaching from North on Track 1
+        speed: 1.8,
+        targetSpeed: 1.8,
+        trackId: 1,
+        targetTrackId: 1, // Will conflict with EMU-40015 if not rerouted!
+        direction: 1,
+        state: "moving",
+        dockTimer: 0,
+        color: "#991b1b", // Superfast Red
+        accentColor: "#ffffff",
+        origin: "MS (Egmore)",
+        dest: "MDU (Madurai)",
+        assignedTrack: 1,
+        liveTrack: 1,
+        coaches: 18,
+        hasTriggeredConflictCheck: false,
+        rerouted: false,
+        rejoiningTrack: 1
+      },
+      {
+        id: "EMU-40016",
+        number: "40016",
+        name: "Tambaram - Beach Local",
+        type: "emu",
+        length: 140,
+        x: 1100, // Approaching northbound towards PF 4 (since PF 2 is under maintenance)
+        speed: 1.4,
+        targetSpeed: 1.4,
+        trackId: 4,
+        targetTrackId: 4,
+        direction: -1,
+        state: "moving",
+        dockTimer: 0,
+        color: "#92400e",
+        accentColor: "#fef3c7",
+        origin: "TBM (Tambaram)",
+        dest: "MSB (Beach)",
+        assignedTrack: 2, // Originally PF 2, but dynamically rerouted to PF 4 due to mega block!
+        liveTrack: 4,
+        coaches: 9,
+        rerouted: true
+      },
+      {
+        id: "VB-20665",
+        number: "20665",
+        name: "Tirunelveli Vande Bharat",
+        type: "vb",
+        length: 170,
+        x: 1480, // Bound northbound to Egmore
+        speed: 2.2,
+        targetSpeed: 2.2,
+        trackId: 6,
+        targetTrackId: 6,
+        direction: -1,
+        state: "moving",
+        dockTimer: 0,
+        color: "#1e3a8a", // Vande Bharat Blue & White
+        accentColor: "#ffffff",
+        origin: "TEN (Tirunelveli)",
+        dest: "MS (Egmore)",
+        assignedTrack: 6,
+        liveTrack: 6,
+        coaches: 16
+      },
+      {
+        id: "MAINT-TRD",
+        number: "OHE-01",
+        name: "Integrated Mega Block Tower Car",
+        type: "maint",
+        length: 90,
+        x: 680,
+        speed: 0,
+        targetSpeed: 0,
+        trackId: 2, // Parked inside maintenance zone on Track 2
+        targetTrackId: 2,
+        direction: 1,
+        state: "docked",
+        dockTimer: 9999,
+        color: "#f59e0b", // Safety Amber
+        accentColor: "#78350f",
+        origin: "TBM TRD Yard",
+        dest: "Track 2 Work Zone",
+        assignedTrack: 2,
+        liveTrack: 2,
+        coaches: 2
+      }
+    ];
+
+    // Initialize Canvas & High DPI support
+    function initCanvas() {
+      SIM.canvas = document.getElementById('schematicCanvas');
+      SIM.ctx = SIM.canvas.getContext('2d');
+
+      function resize() {
+        const rect = SIM.canvas.parentElement.getBoundingClientRect();
+        const dpr = window.devicePixelRatio || 1;
+        SIM.canvas.width = rect.width * dpr;
+        SIM.canvas.height = rect.height * dpr;
+        SIM.width = rect.width;
+        SIM.height = rect.height;
+        SIM.ctx.scale(dpr, dpr);
+        drawSchematic();
+      }
+
+      window.addEventListener('resize', resize);
+      resize();
+
+      // Pan & Zoom Event Listeners
+      SIM.canvas.addEventListener('mousedown', (e) => {
+        SIM.isDragging = true;
+        SIM.dragStart = { x: e.clientX - SIM.viewOffset.x, y: e.clientY - SIM.viewOffset.y };
+      });
+
+      window.addEventListener('mousemove', (e) => {
+        if (SIM.isDragging) {
+          SIM.viewOffset.x = e.clientX - SIM.dragStart.x;
+          SIM.viewOffset.y = e.clientY - SIM.dragStart.y;
+        }
+      });
+
+      window.addEventListener('mouseup', () => {
+        SIM.isDragging = false;
+      });
+
+      SIM.canvas.addEventListener('wheel', (e) => {
+        e.preventDefault();
+        const factor = e.deltaY < 0 ? 1.1 : 0.9;
+        zoomView(factor, e.clientX, e.clientY);
+      }, { passive: false });
+    }
+
+    function zoomView(factor, centerX, centerY) {
+      const newZoom = Math.min(Math.max(SIM.zoom * factor, 0.6), 2.5);
+      SIM.zoom = newZoom;
+    }
+
+    function resetView() {
+      SIM.zoom = 1.0;
+      SIM.viewOffset = { x: 0, y: 0 };
+    }
+
+    // ========================================================================
+    // SCHEMATIC DRAWING ROUTINES (HIGH RESOLUTION, CRISP LIGHT RAILWAY STYLE)
+    // ========================================================================
+    function drawSchematic() {
+      const ctx = SIM.ctx;
+      if (!ctx) return;
+
+      ctx.save();
+      ctx.clearRect(0, 0, SIM.width, SIM.height);
+
+      // Apply Pan & Zoom Transform
+      ctx.translate(SIM.viewOffset.x, SIM.viewOffset.y);
+      ctx.scale(SIM.zoom, SIM.zoom);
+
+      // Background Grid (Light Engineering Graph)
+      drawBackgroundGrid(ctx);
+
+      // Station Platform Structures & Labels
+      drawStationPlatforms(ctx);
+
+      // Railway Tracks & Crossover Turnouts
+      drawTracksAndCrossovers(ctx);
+
+      // Signals with Live Aspects
+      drawSignals(ctx);
+
+      // Active Maintenance Block Visuals
+      drawMaintenanceBlockVisuals(ctx);
+
+      // Live Animated Trains
+      drawTrains(ctx);
+
+      ctx.restore();
+    }
+
+    function drawBackgroundGrid(ctx) {
+      ctx.strokeStyle = "#e2e8f0";
+      ctx.lineWidth = 0.5;
+      const step = 40;
+      for (let x = 0; x < 1500; x += step) {
+        ctx.beginPath();
+        ctx.moveTo(x, 40);
+        ctx.lineTo(x, 560);
+        ctx.stroke();
+      }
+      for (let y = 60; y < 560; y += step) {
+        ctx.beginPath();
+        ctx.moveTo(40, y);
+        ctx.lineTo(1460, y);
+        ctx.stroke();
+      }
+
+      // Compass & Direction Indicator
+      ctx.fillStyle = "#64748b";
+      ctx.font = "bold 11px system-ui";
+      ctx.fillText("◀ NORTH (Towards Chennai Beach / Egmore)", 100, 80);
+      ctx.fillText("SOUTH (Towards Chengalpattu / Villupuram) ▶", 980, 80);
+    }
+
+    function drawStationPlatforms(ctx) {
+      // Platform Islands
+      // Island 1: PF 1 & PF 2 (y: 140 to 185)
+      drawPlatformIsland(ctx, 450, 150, 500, 25, "PLATFORM 1 (SUBURBAN) / PLATFORM 2", 1);
+      // Island 2: PF 3 & PF 4 (y: 245 to 290)
+      drawPlatformIsland(ctx, 450, 255, 500, 25, "PLATFORM 3 / PLATFORM 4 (MAINLINE FAST)", 3);
+      // Island 3: PF 5 & PF 6 (y: 350 to 395)
+      drawPlatformIsland(ctx, 450, 360, 500, 25, "PLATFORM 5 / PLATFORM 6 (MAIL & EXPRESS)", 5);
+      // Island 4: PF 7 & PF 8 (y: 455 to 500)
+      drawPlatformIsland(ctx, 450, 465, 500, 25, "PLATFORM 7 / PLATFORM 8 (TERMINAL & LOOP)", 7);
+
+      // Foot Overbridge (FOB) across all platforms
+      ctx.fillStyle = "#94a3b8";
+      ctx.fillRect(660, 110, 35, 420);
+      ctx.fillStyle = "#ffffff";
+      ctx.font = "bold 10px system-ui";
+      ctx.save();
+      ctx.translate(680, 320);
+      ctx.rotate(-Math.PI / 2);
+      ctx.fillText("FOOT OVERBRIDGE (FOB)", -60, 4);
+      ctx.restore();
+    }
+
+    function drawPlatformIsland(ctx, x, y, w, h, label, pfNum) {
+      // Platform body (clean concrete slate)
+      ctx.fillStyle = "#f1f5f9";
+      ctx.fillRect(x, y, w, h);
+      ctx.strokeStyle = "#cbd5e1";
+      ctx.lineWidth = 1.5;
+      ctx.strokeRect(x, y, w, h);
+
+      // Yellow safety tactile edge lines
+      ctx.strokeStyle = "#f59e0b";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(x, y); ctx.lineTo(x + w, y);
+      ctx.moveTo(x, y + h); ctx.lineTo(x + w, y + h);
+      ctx.stroke();
+
+      // Platform Signage Badge
+      ctx.fillStyle = "#1e3a8a";
+      ctx.fillRect(x + 10, y + 4, 130, h - 8);
+      ctx.fillStyle = "#ffffff";
+      ctx.font = "bold 9.5px system-ui";
+      ctx.fillText(`PF ${pfNum} & PF ${pfNum + 1}`, x + 16, y + 16);
+
+      // Shelter pillars
+      ctx.fillStyle = "#94a3b8";
+      for (let px = x + 160; px < x + w - 40; px += 80) {
+        ctx.fillRect(px, y + 6, 8, h - 12);
+      }
+    }
+
+    function drawTracksAndCrossovers(ctx) {
+      // 1. Draw Crossover Switches
+      // North throat
+      STATION.northCrossovers.forEach(xover => {
+        const t1 = STATION.tracks.find(t => t.id === xover.fromTrack);
+        const t2 = STATION.tracks.find(t => t.id === xover.toTrack);
+        if (t1 && t2) {
+          ctx.beginPath();
+          ctx.moveTo(xover.x1, t1.y);
+          ctx.bezierCurveTo(
+            (xover.x1 + xover.x2) / 2, t1.y,
+            (xover.x1 + xover.x2) / 2, t2.y,
+            xover.x2, t2.y
+          );
+          ctx.strokeStyle = xover.active ? "#10b981" : "#94a3b8";
+          ctx.lineWidth = xover.active ? 3.5 : 2;
+          ctx.stroke();
+
+          // Crossover Name Tag
+          ctx.fillStyle = xover.active ? "#047857" : "#64748b";
+          ctx.font = "bold 9px system-ui";
+          ctx.fillText(xover.id, (xover.x1 + xover.x2) / 2 - 8, (t1.y + t2.y) / 2 - 4);
+        }
+      });
+
+      // South throat
+      STATION.southCrossovers.forEach(xover => {
+        const t1 = STATION.tracks.find(t => t.id === xover.fromTrack);
+        const t2 = STATION.tracks.find(t => t.id === xover.toTrack);
+        if (t1 && t2) {
+          ctx.beginPath();
+          ctx.moveTo(xover.x1, t1.y);
+          ctx.bezierCurveTo(
+            (xover.x1 + xover.x2) / 2, t1.y,
+            (xover.x1 + xover.x2) / 2, t2.y,
+            xover.x2, t2.y
+          );
+          ctx.strokeStyle = xover.active ? "#10b981" : "#94a3b8";
+          ctx.lineWidth = xover.active ? 3.5 : 2;
+          ctx.stroke();
+
+          ctx.fillStyle = xover.active ? "#047857" : "#64748b";
+          ctx.font = "bold 9px system-ui";
+          ctx.fillText(xover.id, (xover.x1 + xover.x2) / 2 - 8, (t1.y + t2.y) / 2 - 4);
+        }
+      });
+
+      // 2. Draw Main Tracks
+      STATION.tracks.forEach(track => {
+        // Sleepers
+        ctx.strokeStyle = "#cbd5e1";
+        ctx.lineWidth = 1;
+        for (let x = STATION.xStart; x <= STATION.xEnd; x += 12) {
+          ctx.beginPath();
+          ctx.moveTo(x, track.y - 5);
+          ctx.lineTo(x, track.y + 5);
+          ctx.stroke();
+        }
+
+        // Dual Steel Rails
+        ctx.strokeStyle = "#475569";
+        ctx.lineWidth = 2.5;
+
+        // Check if track is active route or occupied
+        const isOccupied = TRAINS.some(tr => tr.trackId === track.id && tr.x > 0 && tr.x < 1400);
+        if (isOccupied) {
+          ctx.strokeStyle = "#ef4444"; // Red track circuit indication
+        }
+
+        ctx.beginPath();
+        ctx.moveTo(STATION.xStart, track.y - 2);
+        ctx.lineTo(STATION.xEnd, track.y - 2);
+        ctx.moveTo(STATION.xStart, track.y + 2);
+        ctx.lineTo(STATION.xEnd, track.y + 2);
+        ctx.stroke();
+
+        // Track Name Label on Left
+        ctx.fillStyle = "#1e293b";
+        ctx.font = "bold 11px system-ui";
+        ctx.fillText(track.name, 90, track.y - 8);
+      });
+    }
+
+    function drawSignals(ctx) {
+      STATION.signals.forEach(sig => {
+        const track = STATION.tracks.find(t => t.id === sig.trackId);
+        if (!track) return;
+
+        const y = track.y - 14;
+        // Signal Mast
+        ctx.strokeStyle = "#334155";
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(sig.x, track.y - 4);
+        ctx.lineTo(sig.x, y - 10);
+        ctx.stroke();
+
+        // Signal Head Box
+        ctx.fillStyle = "#0f172a";
+        ctx.fillRect(sig.x - 4, y - 18, 8, 16);
+        ctx.strokeStyle = "#ffffff";
+        ctx.lineWidth = 0.5;
+        ctx.strokeRect(sig.x - 4, y - 18, 8, 16);
+
+        // Aspect Lamp (Red, Yellow, Green)
+        ctx.beginPath();
+        let lampColor = "#ef4444"; // Red
+        if (sig.aspect === "green") lampColor = "#10b981";
+        else if (sig.aspect === "yellow") lampColor = "#f59e0b";
+
+        ctx.arc(sig.x, y - 10, 3, 0, Math.PI * 2);
+        ctx.fillStyle = lampColor;
+        ctx.fill();
+
+        // Glow
+        ctx.shadowColor = lampColor;
+        ctx.shadowBlur = 6;
+        ctx.stroke();
+        ctx.shadowBlur = 0;
+      });
+    }
+
+    function drawMaintenanceBlockVisuals(ctx) {
+      if (!SIM.maintenanceActive) return;
+
+      const track = STATION.tracks.find(t => t.id === SIM.maintenancePlatform);
+      if (!track) return;
+
+      const x1 = STATION.platformXStart - 20;
+      const x2 = STATION.platformXEnd + 40;
+      const w = x2 - x1;
+
+      // Hazard Stripes Box over Maintenance Block
+      ctx.save();
+      ctx.fillStyle = "rgba(245, 158, 11, 0.15)";
+      ctx.fillRect(x1, track.y - 12, w, 24);
+
+      // Warning border
+      ctx.setLineDash([8, 8]);
+      ctx.strokeStyle = "#d97706";
+      ctx.lineWidth = 2;
+      ctx.strokeRect(x1, track.y - 12, w, 24);
+      ctx.setLineDash([]);
+
+      // Maintenance Signage Badge
+      ctx.fillStyle = "#b45309";
+      ctx.fillRect(x1 + 10, track.y - 28, 220, 16);
+      ctx.fillStyle = "#ffffff";
+      ctx.font = "bold 9.5px system-ui";
+      ctx.fillText("⚠️ UNIFIED MEGA BLOCK: CIVIL + TRD + S&T", x1 + 16, track.y - 16);
+
+      // Overhead Catenary (OHE) wire inspection graphic
+      ctx.strokeStyle = "#0284c7";
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(x1, track.y - 32);
+      ctx.lineTo(x2, track.y - 32);
+      ctx.stroke();
+
+      ctx.restore();
+    }
+
+    function drawTrains(ctx) {
+      TRAINS.forEach(train => {
+        // Skip trains outside visible horizon
+        if (train.x < -250 || train.x > 1650) return;
+
+        const currentTrack = STATION.tracks.find(t => t.id === train.trackId);
+        if (!currentTrack) return;
+
+        const y = currentTrack.y;
+        const halfLen = train.length / 2;
+
+        ctx.save();
+        ctx.translate(train.x, y);
+
+        // Train Shadow
+        ctx.fillStyle = "rgba(0, 0, 0, 0.12)";
+        ctx.fillRect(-halfLen, -8, train.length, 18);
+
+        // Train Body (High Definition Coach Rake)
+        ctx.fillStyle = train.color;
+        ctx.beginPath();
+        // Aerodynamic nose for Vande Bharat, standard cab for WAP-7 / EMU
+        if (train.type === "vb") {
+          ctx.roundRect(-halfLen, -7, train.length, 14, [8, 8, 8, 8]);
+        } else {
+          ctx.roundRect(-halfLen, -7, train.length, 14, [4, 4, 4, 4]);
+        }
+        ctx.fill();
+        ctx.strokeStyle = "#ffffff";
+        ctx.lineWidth = 1;
+        ctx.stroke();
+
+        // Accent Livery Stripe
+        ctx.fillStyle = train.accentColor;
+        ctx.fillRect(-halfLen + 10, -2, train.length - 20, 4);
+
+        // Coach Windows
+        ctx.fillStyle = "#1e293b";
+        const windowSpacing = 16;
+        for (let wx = -halfLen + 18; wx < halfLen - 18; wx += windowSpacing) {
+          ctx.fillRect(wx, -5, 9, 3);
+          ctx.fillRect(wx, 2, 9, 3);
+        }
+
+        // Headlights (Warm Yellow beam ahead of train)
+        ctx.fillStyle = "#fef08a";
+        const frontX = train.direction === 1 ? halfLen : -halfLen;
+        ctx.beginPath();
+        ctx.arc(frontX, 0, 3, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Direction Light Cone
+        if (train.speed > 0) {
+          ctx.save();
+          const coneGrad = ctx.createLinearGradient(
+            frontX, 0,
+            frontX + (train.direction * 50), 0
+          );
+          coneGrad.addColorStop(0, "rgba(254, 240, 138, 0.4)");
+          coneGrad.addColorStop(1, "rgba(254, 240, 138, 0)");
+          ctx.fillStyle = coneGrad;
+          ctx.beginPath();
+          ctx.moveTo(frontX, 0);
+          ctx.lineTo(frontX + (train.direction * 50), -12);
+          ctx.lineTo(frontX + (train.direction * 50), 12);
+          ctx.closePath();
+          ctx.fill();
+          ctx.restore();
+        }
+
+        // Pantograph (For electric locos & EMUs)
+        if (train.type !== "maint") {
+          ctx.strokeStyle = "#334155";
+          ctx.lineWidth = 1.5;
+          ctx.beginPath();
+          ctx.moveTo(-halfLen + 25, -7);
+          ctx.lineTo(-halfLen + 32, -15);
+          ctx.lineTo(-halfLen + 39, -7);
+          ctx.stroke();
+        }
+
+        // Train Info Overlay Tag (Crisp non-cursive label)
+        ctx.fillStyle = "#ffffff";
+        ctx.strokeStyle = "#cbd5e1";
+        ctx.lineWidth = 1;
+        const tagWidth = 120;
+        ctx.fillRect(-tagWidth / 2, -26, tagWidth, 15);
+        ctx.strokeRect(-tagWidth / 2, -26, tagWidth, 15);
+
+        ctx.fillStyle = "#0f172a";
+        ctx.font = "bold 9.5px system-ui";
+        ctx.textAlign = "center";
+        ctx.fillText(`${train.number} ${train.name}`, 0, -15);
+        ctx.textAlign = "left";
+
+        ctx.restore();
+      });
+    }
+
+    // ========================================================================
+    // SIMULATION ENGINE: CONFLICT DETECTION & DYNAMIC REROUTING LOGIC
+    // ========================================================================
+    function updateSimulation(deltaSec) {
+      // 1. Advance System Clock
+      SIM.clockTime.setSeconds(SIM.clockTime.getSeconds() + Math.round(deltaSec * 4));
+      document.getElementById('liveClockDisplay').textContent = 
+        SIM.clockTime.toTimeString().split(' ')[0] + " IST";
+
+      // 2. Check Signals & Track Interlocking
+      updateSignalsAndInterlocking();
+
+      // 3. Check for Train Conflicts (Especially Track 1 user scenario!)
+      checkTrack1ConflictScenario();
+
+      // 4. Update Each Train Position & State
+      TRAINS.forEach(train => {
+        // Platform Dwell Logic
+        if (train.state === "docked") {
+          if (train.dockTimer > 0) {
+            train.dockTimer -= deltaSec;
+          } else {
+            // Train ready to depart!
+            train.state = "moving";
+            train.targetSpeed = train.direction === 1 ? 1.8 : 1.6;
+            sound.playStationChime();
+            sound.playTrainHorn();
+          }
+        }
+
+        // Speed Smoothing
+        train.speed += (train.targetSpeed - train.speed) * 0.05;
+
+        // Position Advancement
+        train.x += train.direction * train.speed * deltaSec * 60;
+
+        // Loop / Re-enter logic for endless continuous presentation
+        if (train.direction === 1 && train.x > 1550) {
+          train.x = -150;
+          train.hasTriggeredConflictCheck = false;
+          train.rerouted = false;
+          train.trackId = train.assignedTrack;
+          train.targetTrackId = train.assignedTrack;
+        } else if (train.direction === -1 && train.x < -150) {
+          train.x = 1550;
+          train.rerouted = false;
+        }
+
+        // Docking Trigger at Platform Center
+        if (train.state === "moving" && train.speed > 0.5) {
+          const isAtPlatform = train.x > 620 && train.x < 680 && train.dockTimer === 0;
+          if (isAtPlatform && train.id === "EMU-40015") {
+            train.state = "docked";
+            train.dockTimer = 40;
+            train.targetSpeed = 0;
+          }
+        }
+      });
+
+      // Update Live UI Table
+      updateTimetableUI();
+    }
+
+    function updateSignalsAndInterlocking() {
+      // Automatic Block Interlocking:
+      // If Track 1 is occupied at platform, North Home Signal S-DN-HOME-1 is YELLOW / RED
+      const t1Occupied = TRAINS.some(t => t.trackId === 1 && t.x > 400 && t.x < 1000);
+      const sigHome1 = STATION.signals.find(s => s.id === "S-DN-HOME-1");
+      if (sigHome1) {
+        sigHome1.aspect = t1Occupied ? "yellow" : "green";
+      }
+
+      // Track 2 (Maintenance Block) is strictly RED
+      const sigStarter2 = STATION.signals.find(s => s.id === "S-UP-STARTER-2");
+      if (sigStarter2) {
+        sigStarter2.aspect = "red";
+      }
+    }
+
+    // ========================================================================
+    // CORE USER SCENARIO IMPLEMENTATION:
+    // "In Tambaram, trains will arrive from various directions. So if a train arrive in track 1
+    //  and another train comes in same track then it has to wait. So to avoid this the second train
+    //  in track 1 should be changed to another track and again changed back to track 1 when the first
+    //  train leaves. U NEED TO ASK THE USER FOR ALLOCATION OF ORDER IN TRAIN TRACK WHETHER NEEDED TO CHANGE THE TRACK OR NOT"
+    // ========================================================================
+    function checkTrack1ConflictScenario() {
+      const train1 = TRAINS.find(t => t.id === "EMU-40015");
+      const train2 = TRAINS.find(t => t.id === "EXP-12635");
+
+      if (!train1 || !train2) return;
+
+      // Train 1 is occupying Track 1
+      const isTrain1OnTrack1 = (train1.trackId === 1 && train1.x > 450 && train1.x < 950);
+
+      // Train 2 is approaching on Track 1 from the North (x between 100 and 260)
+      const isTrain2Approaching = (train2.trackId === 1 && train2.x > 120 && train2.x < 270);
+
+      if (isTrain1OnTrack1 && isTrain2Approaching && !train2.hasTriggeredConflictCheck && !SIM.isPromptOpen) {
+        train2.hasTriggeredConflictCheck = true;
+        document.getElementById('hudConflictAlert').style.display = 'flex';
+
+        if (SIM.dispatcherMode === "prompt") {
+          // Pause and open Decision Modal to ask the user!
+          openUserDecisionModal(train2);
+        } else {
+          // Autonomous AI Mode: automatically executes optimal reroute
+          executeAutonomousReroute(train2);
+        }
+      }
+
+      // Rejoining Track 1 Logic:
+      // When Train 2 completes its transit through Platform 3, and Train 1 departs Track 1,
+      // return Train 2 to Down Main line via South Crossover XS2!
+      if (train2.rerouted && train2.trackId === 3 && train2.x > 1000) {
+        // Safely switch back to Track 1 via South crossover XS2
+        const xs2 = STATION.southCrossovers.find(x => x.id === "XS2");
+        if (xs2) xs2.active = true;
+        train2.trackId = 1;
+        train2.liveTrack = 1;
+        sound.playSwitchClick();
+        setTimeout(() => { if (xs2) xs2.active = false; }, 3000);
+      }
+    }
+
+    function openUserDecisionModal(train) {
+      SIM.pendingConflictTrain = train;
+      SIM.isPromptOpen = true;
+      SIM.promptTimer = 15;
+
+      const modal = document.getElementById('decisionModal');
+      modal.classList.add('active');
+      sound.playStationChime();
+
+      // Start countdown
+      const timerDisplay = document.getElementById('modalTimer');
+      timerDisplay.textContent = `Auto in ${SIM.promptTimer}s`;
+
+      if (SIM.promptInterval) clearInterval(SIM.promptInterval);
+      SIM.promptInterval = setInterval(() => {
+        SIM.promptTimer--;
+        timerDisplay.textContent = `Auto in ${SIM.promptTimer}s`;
+        if (SIM.promptTimer <= 0) {
+          clearInterval(SIM.promptInterval);
+          resolveUserDecision('reroute_p3'); // Default safe action
+        }
+      }, 1000);
+    }
+
+    function resolveUserDecision(choice, customTrack) {
+      if (SIM.promptInterval) clearInterval(SIM.promptInterval);
+      const modal = document.getElementById('decisionModal');
+      modal.classList.remove('active');
+      SIM.isPromptOpen = false;
+      document.getElementById('hudConflictAlert').style.display = 'none';
+
+      const train = SIM.pendingConflictTrain;
+      if (!train) return;
+
+      if (choice === 'reroute_p3') {
+        // Change track to Platform 3 via Crossover XN2!
+        applyDynamicReroute(train, 3, "XN2");
+      } else if (choice === 'reroute_custom' && customTrack) {
+        // Custom track chosen by user
+        applyDynamicReroute(train, customTrack, "XN2");
+      } else if (choice === 'hold_signal') {
+        // Hold at home signal
+        train.targetSpeed = 0;
+        train.state = "waiting_signal";
+        const sig = STATION.signals.find(s => s.id === "S-DN-HOME-1");
+        if (sig) sig.aspect = "red";
+      }
+
+      SIM.reroutesCompleted++;
+      document.getElementById('kpiRerouteCount').textContent = `${SIM.reroutesCompleted} Completed`;
+    }
+
+    function executeAutonomousReroute(train) {
+      applyDynamicReroute(train, 3, "XN2");
+      SIM.reroutesCompleted++;
+      document.getElementById('kpiRerouteCount').textContent = `${SIM.reroutesCompleted} Completed`;
+    }
+
+    function applyDynamicReroute(train, targetTrack, crossoverId) {
+      sound.playSwitchClick();
+      const xover = STATION.northCrossovers.find(x => x.id === crossoverId);
+      if (xover) {
+        xover.active = true;
+        setTimeout(() => { xover.active = false; }, 4000);
+      }
+
+      train.trackId = targetTrack;
+      train.liveTrack = targetTrack;
+      train.rerouted = true;
+      train.state = "diverting";
+      train.targetSpeed = 1.8;
+
+      // Status toast
+      const hud = document.getElementById('hudStatus');
+      hud.innerHTML = `<span>🔄 <strong>Track Allocation Executed:</strong> Train ${train.number} dynamically switched to Platform ${targetTrack}. Zero waiting delay!</span>`;
+    }
+
+    // Explicit Scenario Trigger Button
+    function triggerTrack1ConflictScenario() {
+      const train1 = TRAINS.find(t => t.id === "EMU-40015");
+      const train2 = TRAINS.find(t => t.id === "EXP-12635");
+
+      if (train1 && train2) {
+        train1.x = 650;
+        train1.trackId = 1;
+        train1.state = "docked";
+        train1.dockTimer = 60;
+        train1.speed = 0;
+
+        train2.x = 110;
+        train2.trackId = 1;
+        train2.targetTrackId = 1;
+        train2.speed = 1.8;
+        train2.targetSpeed = 1.8;
+        train2.state = "moving";
+        train2.hasTriggeredConflictCheck = false;
+        train2.rerouted = false;
+
+        sound.playStationChime();
+      }
+    }
+
+    // Spawn Train Helper
+    function spawnTrain(number, name, type, direction, trackId) {
+      const existing = TRAINS.find(t => t.number === number);
+      if (existing) {
+        existing.x = direction === 1 ? -100 : 1500;
+        existing.trackId = trackId;
+        existing.speed = 1.8;
+        existing.targetSpeed = 1.8;
+        existing.state = "moving";
+      } else {
+        TRAINS.push({
+          id: `SPAWN-${number}`,
+          number: number,
+          name: name,
+          type: type,
+          length: 170,
+          x: direction === 1 ? -100 : 1500,
+          speed: 1.8,
+          targetSpeed: 1.8,
+          trackId: trackId,
+          targetTrackId: trackId,
+          direction: direction,
+          state: "moving",
+          dockTimer: 0,
+          color: type === 'vb' ? '#1e3a8a' : '#991b1b',
+          accentColor: '#ffffff',
+          origin: "Tambaram Control",
+          dest: "Express Schedule",
+          assignedTrack: trackId,
+          liveTrack: trackId,
+          coaches: 16
+        });
+      }
+      sound.playStationChime();
+    }
+
+    // Toggle Maintenance Block
+    function toggleMaintenanceBlock() {
+      SIM.maintenanceActive = !SIM.maintenanceActive;
+      const tag = document.getElementById('maintStatusTag');
+      const notice = document.getElementById('hudMaintenanceNotice');
+      if (SIM.maintenanceActive) {
+        tag.textContent = "Track 2 Active";
+        notice.style.display = 'inline-flex';
+        sound.playSwitchClick();
+      } else {
+        tag.textContent = "Cleared (Normal Operation)";
+        notice.style.display = 'none';
+      }
+    }
+
+    // Dispatcher Mode Toggle
+    function setDispatcherMode(mode) {
+      SIM.dispatcherMode = mode;
+      document.getElementById('modePromptBtn').classList.toggle('active', mode === 'prompt');
+      document.getElementById('modeAutoBtn').classList.toggle('active', mode === 'auto');
+    }
+
+    // Playback Controls
+    function togglePlayPause() {
+      SIM.running = !SIM.running;
+      document.getElementById('playIcon').textContent = SIM.running ? '⏸' : '▶';
+      document.getElementById('playText').textContent = SIM.running ? 'Pause' : 'Play';
+    }
+
+    function stepSimulation() {
+      SIM.running = false;
+      document.getElementById('playIcon').textContent = '▶';
+      document.getElementById('playText').textContent = 'Play';
+      updateSimulation(0.1);
+      drawSchematic();
+    }
+
+    function setSpeed(spd, btn) {
+      SIM.speed = spd;
+      document.querySelectorAll('.mode-pill button').forEach(b => {
+        if (b.parentElement.getAttribute('title')?.includes('Speed')) b.classList.remove('active');
+      });
+      btn.classList.add('active');
+    }
+
+    function resetSimulation() {
+      window.location.reload();
+    }
+
+    // Timetable UI Table Population
+    function updateTimetableUI() {
+      const tbody = document.getElementById('trainTableBody');
+      if (!tbody) return;
+
+      let html = "";
+      TRAINS.forEach(train => {
+        const typeClass = `tag-${train.type}`;
+        let statusBadge = `<span class="tag tag-status-moving">Moving (${Math.round(train.speed * 40)} km/h)</span>`;
+        if (train.state === "docked") {
+          statusBadge = `<span class="tag tag-status-docked">Docked (${Math.round(train.dockTimer)}s)</span>`;
+        } else if (train.state === "diverting" || train.rerouted) {
+          statusBadge = `<span class="tag tag-status-rerouted">Rerouted (PF ${train.liveTrack})</span>`;
+        } else if (train.state === "waiting_signal") {
+          statusBadge = `<span class="tag tag-status-waiting">Held at Signal</span>`;
+        }
+
+        const isHighlighted = train.id === "EXP-12635" && train.rerouted;
+        html += `
+          <tr class="${isHighlighted ? 'active-row' : ''}">
+            <td>
+              <strong>${train.number}</strong> ${train.name}
+              <span class="tag ${typeClass}" style="margin-left: 4px;">${train.type.toUpperCase()}</span>
+            </td>
+            <td>${train.origin} ➔ ${train.dest}</td>
+            <td>PF ${train.assignedTrack}</td>
+            <td>${statusBadge}</td>
+            <td>
+              <button class="btn" style="padding: 2px 6px; font-size: 10px;" onclick="focusTrain('${train.id}')">
+                Track
+              </button>
+            </td>
+          </tr>
+        `;
+      });
+      tbody.innerHTML = html;
+    }
+
+    function focusTrain(trainId) {
+      const train = TRAINS.find(t => t.id === trainId);
+      if (train) {
+        SIM.viewOffset.x = (SIM.width / 2) - train.x;
+      }
+    }
+
+    // ========================================================================
+    // GUIDED "WORKING VIDEO" PRESENTATION TOUR
+    // ========================================================================
+    const VIDEO_TOUR_STEPS = [
+      {
+        title: "STEP 1: TAMBARAM JUNCTION & THE CORE PROBLEM",
+        text: "Tambaram (TBM) handles hundreds of suburban & express trains daily. Traditionally, track, catenary, and signalling departments schedule maintenance separately, causing 12+ hours of downtime and severe train delays.",
+        action: () => {
+          resetView();
+          triggerTrack1ConflictScenario();
+        }
+      },
+      {
+        title: "STEP 2: THE CONFLICT (TRACK 1 BOTTLENECK)",
+        text: "Watch Track 1: Suburban Local 40015 is docked at Platform 1. Superfast 12635 Vaigai Express arrives on the same track. Normally, Vaigai would halt at the outer signal, losing 15+ minutes.",
+        action: () => {
+          const train2 = TRAINS.find(t => t.id === "EXP-12635");
+          if (train2) {
+            train2.x = 180;
+            SIM.viewOffset.x = (SIM.width / 2) - train2.x;
+          }
+        }
+      },
+      {
+        title: "STEP 3: INTERACTIVE OPERATOR DISPATCH PROMPT",
+        text: "The system automatically detects the conflict and asks the operator for track allocation orders. The AI recommends rerouting to Platform 3 via Crossover XN-2 to prevent any delay.",
+        action: () => {
+          const train2 = TRAINS.find(t => t.id === "EXP-12635");
+          if (train2) openUserDecisionModal(train2);
+        }
+      },
+      {
+        title: "STEP 4: DYNAMIC SWITCH & SEAMLESS REJOIN",
+        text: "With track change approved, Crossover XN-2 locks green. Vaigai Express diverts smoothly to Platform 3 without halting. Once clear, it rejoins the Down Main line via South Crossover XS-2.",
+        action: () => {
+          resolveUserDecision('reroute_p3');
+        }
+      },
+      {
+        title: "STEP 5: INTEGRATED 3-DEPARTMENT MEGA BLOCK",
+        text: "Notice Platform 2: Civil (track tamping), Electrical (OHE wire), and Signalling are merged into a single 4-hour window. Scheduled trains are dynamically diverted to Platform 4 with zero deadlocks.",
+        action: () => {
+          SIM.viewOffset.x = (SIM.width / 2) - 700;
+        }
+      },
+      {
+        title: "STEP 6: PROVEN RESULTS & ZERO COLLISIONS",
+        text: "Result: 66.7% maintenance downtime saved, 100% collision-free interlocking safety, 0 passenger cancellations, and 98.5% track asset availability achieved!",
+        action: () => {
+          resetView();
+        }
+      }
+    ];
+
+    function toggleVideoMode() {
+      SIM.videoTour.active = !SIM.videoTour.active;
+      const banner = document.getElementById('videoBanner');
+      const btn = document.getElementById('btnVideoMode');
+
+      if (SIM.videoTour.active) {
+        banner.classList.add('active');
+        btn.classList.add('btn-active');
+        SIM.videoTour.step = 0;
+        showVideoStep(0);
+      } else {
+        stopVideoMode();
+      }
+    }
+
+    function stopVideoMode() {
+      SIM.videoTour.active = false;
+      document.getElementById('videoBanner').classList.remove('active');
+      document.getElementById('btnVideoMode').classList.remove('btn-active');
+      resetView();
+    }
+
+    function showVideoStep(stepIndex) {
+      SIM.videoTour.step = stepIndex;
+      const step = VIDEO_TOUR_STEPS[stepIndex];
+      document.getElementById('videoStepBadge').textContent = step.title;
+      document.getElementById('videoStepText').textContent = step.text;
+      step.action();
+      sound.playStationChime();
+    }
+
+    function nextVideoStep() {
+      if (SIM.videoTour.step < VIDEO_TOUR_STEPS.length - 1) {
+        showVideoStep(SIM.videoTour.step + 1);
+      } else {
+        stopVideoMode();
+      }
+    }
+
+    function prevVideoStep() {
+      if (SIM.videoTour.step > 0) {
+        showVideoStep(SIM.videoTour.step - 1);
+      }
+    }
+
+    // ========================================================================
+    // MAIN ANIMATION LOOP
+    // ========================================================================
+    function animationLoop(timestamp) {
+      if (!SIM.lastTimestamp) SIM.lastTimestamp = timestamp;
+      const deltaSec = Math.min((timestamp - SIM.lastTimestamp) / 1000, 0.1);
+      SIM.lastTimestamp = timestamp;
+
+      if (SIM.running) {
+        updateSimulation(deltaSec * SIM.speed);
+      }
+      drawSchematic();
+      requestAnimationFrame(animationLoop);
+    }
+
+    // Start Simulation on DOM Ready
+    window.addEventListener('DOMContentLoaded', () => {
+      initCanvas();
+      requestAnimationFrame(animationLoop);
+    });
+  </script>
+</body>
+</html>

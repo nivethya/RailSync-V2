@@ -1,0 +1,778 @@
+.straight-blueprint {
+  width: 100%;
+
+  overflow: hidden;
+
+  border-top:
+    1px solid rgba(103, 78, 57, 0.12);
+
+  border-bottom:
+    1px solid rgba(103, 78, 57, 0.14);
+
+  background:
+    #f6eee1;
+
+  color:
+    #332921;
+}
+
+
+/* =========================================
+   HEADER
+   ========================================= */
+
+.straight-blueprint-header {
+  min-height: 78px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 20px;
+
+  padding:
+    15px
+    18px;
+}
+
+
+.straight-blueprint-kicker {
+  display: block;
+
+  color:
+    #a36847;
+
+  font-size: 7px;
+
+  font-weight: 900;
+
+  letter-spacing:
+    0.18em;
+}
+
+
+.straight-blueprint-header h2 {
+  margin:
+    8px
+    0
+    0;
+
+  font-family:
+    Georgia,
+    serif;
+
+  font-size: 25px;
+
+  color:
+    #2c241f;
+}
+
+
+.straight-live-status {
+  display: flex;
+  align-items: center;
+
+  gap: 8px;
+
+  color:
+    #4d7a59;
+
+  font-size: 7px;
+
+  font-weight: 850;
+
+  letter-spacing:
+    0.14em;
+}
+
+
+.straight-live-status i {
+  width: 8px;
+  height: 8px;
+
+  border-radius: 50%;
+
+  background:
+    #338553;
+
+  box-shadow:
+    0
+    0
+    0
+    6px
+    rgba(51, 133, 83, 0.09);
+}
+
+
+/* =========================================
+   CANVAS
+   ========================================= */
+
+.straight-track-canvas {
+  position: relative;
+
+  height: 310px;
+
+  overflow: hidden;
+
+  margin:
+    0
+    18px;
+
+  border:
+    1px solid
+    rgba(116, 91, 70, 0.25);
+
+  background:
+    #f4ecdf;
+}
+
+
+/* ENGINEERING GRID */
+
+.straight-grid {
+  position: absolute;
+
+  inset: 0;
+
+  background:
+    linear-gradient(
+      rgba(113, 87, 64, 0.055)
+      1px,
+      transparent
+      1px
+    ),
+    linear-gradient(
+      90deg,
+      rgba(113, 87, 64, 0.055)
+      1px,
+      transparent
+      1px
+    );
+
+  background-size:
+    42px 42px;
+}
+
+
+/* =========================================
+   STATION LABELS
+   ========================================= */
+
+.straight-station {
+  position: absolute;
+
+  top: 27px;
+
+  z-index: 5;
+
+  display: flex;
+
+  flex-direction: column;
+
+  color:
+    #3c322b;
+}
+
+
+.straight-station svg {
+  margin-bottom:
+    8px;
+}
+
+
+.straight-station strong {
+  font-family:
+    Georgia,
+    serif;
+
+  font-size:
+    14px;
+}
+
+
+.straight-station span {
+  margin-top:
+    4px;
+
+  color:
+    #897a6d;
+
+  font-size:
+    6px;
+
+  letter-spacing:
+    0.08em;
+}
+
+
+.straight-station.start {
+  left: 7%;
+}
+
+
+.straight-station.end {
+  right: 7%;
+
+  align-items: flex-end;
+
+  text-align: right;
+}
+
+
+/* =========================================
+   TRACK SYSTEM
+   ========================================= */
+
+.straight-track-system {
+  position: absolute;
+
+  left: 7%;
+  right: 7%;
+
+  top: 117px;
+
+  height: 105px;
+}
+
+
+/* BROWN RAILS */
+
+.straight-rail {
+  position: absolute;
+
+  left: 0;
+
+  width: 100%;
+
+  height: 6px;
+
+  border-radius:
+    2px;
+
+  background:
+    linear-gradient(
+      180deg,
+      #704b35,
+      #5c3d2b
+    );
+
+  box-shadow:
+    0
+    1px
+    0
+    rgba(255,255,255,.45);
+}
+
+
+.straight-rail.upper {
+  top: 15px;
+}
+
+
+.straight-rail.lower {
+  top: 60px;
+}
+
+
+/* CENTER GUIDE LINE */
+
+.straight-track-center {
+  position: absolute;
+
+  left: 0;
+
+  top: 39px;
+
+  width: 100%;
+
+  border-top:
+    1px dashed
+    rgba(103, 82, 65, 0.32);
+}
+
+
+/* =========================================
+   SLEEPERS
+   ========================================= */
+
+.straight-sleepers {
+  position: absolute;
+
+  inset: 0;
+}
+
+
+.straight-sleepers span {
+  position: absolute;
+
+  top: 7px;
+
+  width: 6px;
+  height: 71px;
+
+  transform:
+    translateX(-50%);
+
+  border-radius:
+    1px;
+
+  background:
+    linear-gradient(
+      90deg,
+      #b6a28e,
+      #9f8b77,
+      #bba794
+    );
+
+  opacity:
+    .78;
+}
+
+
+/* =========================================
+   ENTRY / EXIT RINGS
+   ========================================= */
+
+.straight-end-ring {
+  position: absolute;
+
+  top: 27px;
+
+  width: 38px;
+  height: 38px;
+
+  border:
+    6px solid
+    #75513a;
+
+  border-radius:
+    50%;
+
+  background:
+    #f6eee1;
+
+  z-index: 6;
+}
+
+
+.straight-end-ring.entry {
+  left: -19px;
+}
+
+
+.straight-end-ring.exit {
+  right: -19px;
+}
+
+
+/* =========================================
+   TURNOUT / SWITCH
+   ========================================= */
+
+.straight-turnout {
+  position: absolute;
+
+  left: 31%;
+
+  top: -45px;
+
+  width: 220px;
+  height: 75px;
+
+  z-index: 4;
+}
+
+
+.turnout-curve {
+  position: absolute;
+
+  left: 0;
+  bottom: 0;
+
+  width: 220px;
+  height: 72px;
+
+  border-top:
+    3px solid
+    #775039;
+
+  border-radius:
+    50% 50% 0 0;
+
+  transform:
+    rotate(
+      -1deg
+    );
+}
+
+
+.turnout-leg {
+  position: absolute;
+
+  left: 111px;
+  bottom: -2px;
+
+  width: 3px;
+  height: 61px;
+
+  background:
+    #775039;
+}
+
+
+.turnout-signal {
+  position: absolute;
+
+  left: 102px;
+  top: -7px;
+
+  width: 20px;
+  height: 20px;
+
+  border:
+    4px solid
+    #f6eee1;
+
+  border-radius:
+    50%;
+
+  background:
+    #358459;
+
+  box-shadow:
+    0
+    2px
+    7px
+    rgba(57, 65, 54, 0.17);
+}
+
+
+/* =========================================
+   MAINTENANCE ZONE
+   ========================================= */
+
+.straight-maintenance-zone {
+  position: absolute;
+
+  left: 54%;
+
+  top: 0;
+
+  width: 13%;
+  height: 80px;
+
+  border:
+    3px dashed
+    #b24e43;
+
+  background:
+    rgba(175, 77, 64, 0.045);
+
+  z-index: 8;
+}
+
+
+.straight-maintenance-zone > span {
+  position: absolute;
+
+  top: 95px;
+  left: 50%;
+
+  width: 170px;
+
+  transform:
+    translateX(-50%);
+
+  color:
+    #837367;
+
+  font-family:
+    monospace;
+
+  font-size:
+    10px;
+
+  letter-spacing:
+    .14em;
+
+  text-align:
+    center;
+}
+
+
+.maintenance-crosshair {
+  position: absolute;
+
+  background:
+    #b04b43;
+}
+
+
+.maintenance-crosshair.horizontal {
+  top: 50%;
+  left: -15%;
+
+  width: 130%;
+  height: 1px;
+}
+
+
+.maintenance-crosshair.vertical {
+  left: 50%;
+  top: -15%;
+
+  width: 1px;
+  height: 130%;
+}
+
+
+/* =========================================
+   MAINTENANCE JOB LABEL
+   ========================================= */
+
+.straight-maintenance-label {
+  position: absolute;
+
+  left: 56%;
+  top: -50px;
+
+  display: flex;
+  align-items: center;
+
+  gap: 8px;
+
+  color:
+    #b1493f;
+}
+
+
+.straight-maintenance-label strong {
+  display: block;
+
+  font-family:
+    monospace;
+
+  font-size:
+    8px;
+}
+
+
+.straight-maintenance-label span {
+  display: block;
+
+  margin-top:
+    4px;
+
+  font-family:
+    monospace;
+
+  font-size:
+    6px;
+}
+
+
+/* =========================================
+   ENTRY / EXIT
+   ========================================= */
+
+.straight-entry-label,
+.straight-exit-label {
+  position: absolute;
+
+  bottom: 55px;
+
+  color:
+    #796c61;
+
+  font-family:
+    monospace;
+
+  font-size:
+    9px;
+
+  letter-spacing:
+    .18em;
+}
+
+
+.straight-entry-label {
+  left: 6.5%;
+}
+
+
+.straight-exit-label {
+  right: 8%;
+}
+
+
+/* =========================================
+   CONTROL LABELS
+   ========================================= */
+
+.straight-control-info {
+  position: absolute;
+
+  left: 13%;
+  bottom: 34px;
+
+  display: flex;
+
+  gap: 210px;
+}
+
+
+.straight-control-info span {
+  display: flex;
+  align-items: center;
+
+  gap: 7px;
+
+  color:
+    #594d44;
+
+  font-family:
+    monospace;
+
+  font-size:
+    6px;
+
+  letter-spacing:
+    .08em;
+}
+
+
+/* =========================================
+   FOOTER INFO BAR
+   ========================================= */
+
+.straight-blueprint-footer {
+  min-height: 58px;
+
+  display: flex;
+  align-items: center;
+
+  gap: 34px;
+
+  padding:
+    0
+    18px;
+}
+
+
+.straight-blueprint-footer > div {
+  display: flex;
+  align-items: center;
+
+  gap: 6px;
+}
+
+
+.straight-blueprint-footer span {
+  color:
+    #897b70;
+
+  font-family:
+    monospace;
+
+  font-size:
+    6px;
+}
+
+
+.straight-blueprint-footer strong {
+  color:
+    #382d27;
+
+  font-family:
+    monospace;
+
+  font-size:
+    7px;
+}
+
+
+.straight-critical {
+  margin-left:
+    auto;
+
+  color:
+    #b5483d;
+
+  font-family:
+    monospace;
+
+  font-size:
+    7px;
+}
+
+
+/* =========================================
+   RESPONSIVE
+   ========================================= */
+
+@media (
+  max-width: 900px
+) {
+  .straight-track-canvas {
+    height:
+      270px;
+  }
+
+
+  .straight-control-info {
+    gap:
+      70px;
+  }
+
+
+  .straight-blueprint-footer {
+    flex-wrap:
+      wrap;
+
+    gap:
+      13px;
+
+    padding:
+      12px
+      18px;
+  }
+
+
+  .straight-critical {
+    margin-left:
+      0;
+  }
+}
+
+
+@media (
+  max-width: 620px
+) {
+  .straight-track-canvas {
+    margin:
+      0
+      10px;
+
+    overflow-x:
+      auto;
+  }
+
+
+  .straight-track-system {
+    min-width:
+      720px;
+  }
+
+
+  .straight-station.end {
+    right:
+      20px;
+  }
+
+
+  .straight-control-info {
+    display:
+      none;
+  }
+}
