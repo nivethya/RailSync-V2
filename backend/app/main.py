@@ -1,18 +1,24 @@
-﻿from app.api.routes import block_planning
-from contextlib import asynccontextmanager
+﻿from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import text
 
+from app.api.routes import block_planning
 from app.api.routes.auth import router as auth_router
 from app.api.routes.health import router as health_router
-from app.api.routes.manager_operations import router as manager_operations_router
-from app.api.routes.operator_operations import router as operator_operations_router
+from app.api.routes.manager_operations import (
+    router as manager_operations_router,
+)
+from app.api.routes.operator_operations import (
+    router as operator_operations_router,
+)
 from app.api.routes.realtime import router as realtime_router
 from app.api.routes.role_test import router as role_test_router
 from app.api.routes.system import router as system_router
-from app.api.routes.worker_operations import router as worker_operations_router
+from app.api.routes.worker_operations import (
+    router as worker_operations_router,
+)
 
 from app.core.database import engine
 
@@ -35,7 +41,9 @@ async def lifespan(app: FastAPI):
                 )
             )
 
-            postgis_available = bool(postgis_result.scalar())
+            postgis_available = bool(
+                postgis_result.scalar()
+            )
 
             print("")
             print("========================================")
@@ -70,6 +78,9 @@ app = FastAPI(
         "train disruption management system."
     ),
     version="2.0.0",
+    docs_url="/docs",
+    redoc_url="/redoc",
+    openapi_url="/openapi.json",
     lifespan=lifespan,
 )
 
@@ -135,4 +146,6 @@ app.include_router(
     prefix="/api/v1",
 )
 
-app.include_router(block_planning.router)
+app.include_router(
+    block_planning.router,
+)
