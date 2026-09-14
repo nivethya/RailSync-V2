@@ -6,7 +6,7 @@ import axios, {
 
 export const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL ??
-  "http://127.0.0.1:8000/api/v1";
+  "https://railsync-backend-sayz.onrender.com/api/v1";
 
 
 export const ACCESS_TOKEN_KEY =
