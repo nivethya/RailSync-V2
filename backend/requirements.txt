@@ -14,3 +14,8 @@ python-multipart
 httpx
 websockets
 alembic
+joblib
+scikit-learn
+xgboost
+pandas
+numpy
