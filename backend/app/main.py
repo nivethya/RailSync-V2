@@ -2,6 +2,8 @@
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.openapi.docs import get_redoc_html, get_swagger_ui_html
+from fastapi.responses import JSONResponse
 from sqlalchemy import text
 
 from app.api.routes import block_planning
@@ -27,7 +29,9 @@ from app.core.database import engine
 async def lifespan(app: FastAPI):
     try:
         async with engine.begin() as connection:
-            await connection.execute(text("SELECT 1"))
+            await connection.execute(
+                text("SELECT 1")
+            )
 
             postgis_result = await connection.execute(
                 text(
@@ -52,7 +56,9 @@ async def lifespan(app: FastAPI):
             print("PostgreSQL connection: OK")
             print(
                 "PostGIS extension:",
-                "OK" if postgis_available else "NOT FOUND",
+                "OK"
+                if postgis_available
+                else "NOT FOUND",
             )
             print("========================================")
             print("")
@@ -69,6 +75,10 @@ async def lifespan(app: FastAPI):
     await engine.dispose()
 
 
+# ---------------------------------------------------------
+# APPLICATION
+# ---------------------------------------------------------
+
 app = FastAPI(
     title="RailSync API",
     description=(
@@ -78,18 +88,29 @@ app = FastAPI(
         "train disruption management system."
     ),
     version="2.0.0",
-    docs_url="/docs",
-    redoc_url="/redoc",
-    openapi_url="/openapi.json",
+
+    # Disable FastAPI's automatic docs.
+    # We create explicit production routes below.
+    docs_url=None,
+    redoc_url=None,
+    openapi_url=None,
+
     lifespan=lifespan,
 )
 
+
+# ---------------------------------------------------------
+# CORS
+# ---------------------------------------------------------
 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "http://localhost:5173",
         "http://127.0.0.1:5173",
+
+        # We will add the final Vercel URL here
+        # after frontend deployment.
     ],
     allow_credentials=True,
     allow_methods=["*"],
@@ -97,14 +118,77 @@ app.add_middleware(
 )
 
 
-@app.get("/", tags=["default"])
+# ---------------------------------------------------------
+# ROOT
+# ---------------------------------------------------------
+
+@app.get(
+    "/",
+    tags=["System"],
+)
 async def root():
     return {
         "application": "RailSync",
         "version": "2.0.0",
         "status": "running",
+        "environment": "production",
+        "api_docs": "/docs",
+        "openapi": "/openapi.json",
     }
 
+
+# ---------------------------------------------------------
+# MANUAL OPENAPI SCHEMA
+# ---------------------------------------------------------
+
+@app.get(
+    "/openapi.json",
+    include_in_schema=False,
+)
+async def openapi_schema():
+    schema = app.openapi()
+
+    return JSONResponse(
+        content=schema,
+    )
+
+
+# ---------------------------------------------------------
+# MANUAL SWAGGER UI
+# ---------------------------------------------------------
+
+@app.get(
+    "/docs",
+    include_in_schema=False,
+)
+async def swagger_docs():
+    return get_swagger_ui_html(
+        openapi_url="/openapi.json",
+        title="RailSync API - Swagger UI",
+        swagger_favicon_url=(
+            "https://fastapi.tiangolo.com/img/favicon.png"
+        ),
+    )
+
+
+# ---------------------------------------------------------
+# MANUAL REDOC
+# ---------------------------------------------------------
+
+@app.get(
+    "/redoc",
+    include_in_schema=False,
+)
+async def redoc_docs():
+    return get_redoc_html(
+        openapi_url="/openapi.json",
+        title="RailSync API - ReDoc",
+    )
+
+
+# ---------------------------------------------------------
+# API ROUTERS
+# ---------------------------------------------------------
 
 app.include_router(
     health_router,
