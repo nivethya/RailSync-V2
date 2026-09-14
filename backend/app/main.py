@@ -21,7 +21,6 @@ from app.api.routes.system import router as system_router
 from app.api.routes.worker_operations import (
     router as worker_operations_router,
 )
-
 from app.core.database import engine
 
 
@@ -88,13 +87,9 @@ app = FastAPI(
         "train disruption management system."
     ),
     version="2.0.0",
-
-    # Disable FastAPI's automatic docs.
-    # We create explicit production routes below.
     docs_url=None,
     redoc_url=None,
     openapi_url=None,
-
     lifespan=lifespan,
 )
 
@@ -108,10 +103,9 @@ app.add_middleware(
     allow_origins=[
         "http://localhost:5173",
         "http://127.0.0.1:5173",
-
-        # We will add the final Vercel URL here
-        # after frontend deployment.
+        "https://rail-sync-v2-h8ob73qgm-forge-6ace.vercel.app",
     ],
+    allow_origin_regex=r"https://.*\.vercel\.app",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
