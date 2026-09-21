@@ -1,4 +1,6 @@
 import {
+  useEffect,
+  useRef,
   useState,
   type FormEvent,
 } from "react";
@@ -55,9 +57,14 @@ type LoginPageProps = {
 };
 
 
+const DEMO_MODE_KEY =
+  "railsync_demo_mode";
+
+
 const roleConfig = {
   worker: {
-    title: "Worker Login",
+    title:
+      "Worker Login",
 
     subtitle:
       "Access assigned maintenance tasks and shift operations.",
@@ -76,6 +83,12 @@ const roleConfig = {
 
     destination:
       "/worker",
+
+    demoEmployeeId:
+      "WRK001",
+
+    demoPassword:
+      "RailSync@123",
 
     HeroIcon:
       HardHat,
@@ -139,6 +152,12 @@ const roleConfig = {
     destination:
       "/manager",
 
+    demoEmployeeId:
+      "MGR001",
+
+    demoPassword:
+      "RailSync@123",
+
     HeroIcon:
       Wrench,
 
@@ -201,6 +220,12 @@ const roleConfig = {
     destination:
       "/operator",
 
+    demoEmployeeId:
+      "TOP001",
+
+    demoPassword:
+      "RailSync@123",
+
     HeroIcon:
       RadioTower,
 
@@ -261,6 +286,16 @@ function LoginPage({
     ];
 
 
+  const demoLoginStarted =
+    useRef(false);
+
+
+  const isDemoMode =
+    sessionStorage.getItem(
+      DEMO_MODE_KEY,
+    ) === "true";
+
+
   const [
     employeeId,
     setEmployeeId,
@@ -301,6 +336,98 @@ function LoginPage({
     setErrorMessage,
   ] =
     useState("");
+
+
+  useEffect(() => {
+    if (
+      !isDemoMode ||
+      demoLoginStarted.current
+    ) {
+      return;
+    }
+
+
+    demoLoginStarted.current =
+      true;
+
+
+    const runDemoLogin =
+      async () => {
+        try {
+          const user =
+            await login({
+              employee_id:
+                config.demoEmployeeId,
+
+              password:
+                config.demoPassword,
+
+              role:
+                config.backendRole,
+            });
+
+
+          if (
+            user.role !==
+            config.backendRole
+          ) {
+            sessionStorage.removeItem(
+              DEMO_MODE_KEY,
+            );
+
+            navigate(
+              `/login/${roleType}`,
+              {
+                replace:
+                  true,
+              },
+            );
+
+            return;
+          }
+
+
+          navigate(
+            config.destination,
+            {
+              replace:
+                true,
+            },
+          );
+        } catch (error) {
+          console.error(
+            "RailSync demo authentication failed:",
+            error,
+          );
+
+
+          sessionStorage.removeItem(
+            DEMO_MODE_KEY,
+          );
+
+
+          navigate(
+            `/login/${roleType}`,
+            {
+              replace:
+                true,
+            },
+          );
+        }
+      };
+
+
+    runDemoLogin();
+  }, [
+    config.backendRole,
+    config.demoEmployeeId,
+    config.demoPassword,
+    config.destination,
+    isDemoMode,
+    login,
+    navigate,
+    roleType,
+  ]);
 
 
   const handleSubmit =
@@ -353,7 +480,8 @@ function LoginPage({
         navigate(
           config.destination,
           {
-            replace: true,
+            replace:
+              true,
           },
         );
       } catch (error) {
@@ -420,6 +548,32 @@ function LoginPage({
     };
 
 
+  /*
+   * Demo mode:
+   *
+   * Do not display the login page at all.
+   * The real RailSync authentication runs silently.
+   */
+  if (
+    isDemoMode
+  ) {
+    return (
+      <main
+        style={{
+          width:
+            "100vw",
+
+          height:
+            "100vh",
+
+          background:
+            "#f7f4ee",
+        }}
+      />
+    );
+  }
+
+
   return (
     <main
       className={
@@ -432,8 +586,6 @@ function LoginPage({
     >
       <div className="rail-login-shade" />
 
-
-      {/* HEADER */}
 
       <header className="rail-login-header">
         <div className="rail-login-brand">
@@ -509,8 +661,6 @@ function LoginPage({
       </header>
 
 
-      {/* MAIN */}
-
       <section className="rail-login-content">
         <div className="rail-login-photo-message">
           <div className="rail-login-photo-badge">
@@ -543,8 +693,6 @@ function LoginPage({
           </div>
         </div>
 
-
-        {/* LOGIN CARD */}
 
         <section className="rail-login-card">
           <div className="rail-login-card-brand">
@@ -803,8 +951,6 @@ function LoginPage({
         </section>
       </section>
 
-
-      {/* BOTTOM BENEFITS */}
 
       <section className="rail-login-benefits">
         <article>

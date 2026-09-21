@@ -1,4 +1,12 @@
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import {
+  useEffect,
+} from "react";
+
+import {
+  BrowserRouter,
+  Route,
+  Routes,
+} from "react-router-dom";
 
 import LandingPage from "./pages/LandingPage";
 import PublicMapPage from "./pages/PublicMapPage";
@@ -27,71 +35,182 @@ import OperatorAlternatives from "./pages/operator/OperatorAlternatives";
 import OperatorDecisionLog from "./pages/operator/OperatorDecisionLog";
 import OperatorSimulation from "./pages/operator/OperatorSimulation";
 
+
+export const DEMO_MODE_KEY =
+  "railsync_demo_mode";
+
+
+function NormalLanding() {
+  useEffect(() => {
+    sessionStorage.removeItem(
+      DEMO_MODE_KEY,
+    );
+  }, []);
+
+  return <LandingPage />;
+}
+
+
+function DemoLanding() {
+  useEffect(() => {
+    sessionStorage.setItem(
+      DEMO_MODE_KEY,
+      "true",
+    );
+  }, []);
+
+  return <LandingPage />;
+}
+
+
 export default function App() {
   return (
     <BrowserRouter>
       <Routes>
-        {/* PUBLIC */}
-        <Route path="/" element={<LandingPage />} />
-        <Route path="/public-map" element={<PublicMapPage />} />
-        <Route path="/public-insights" element={<PublicInsightsPage />} />
+        <Route
+          path="/"
+          element={<NormalLanding />}
+        />
 
-        {/* AUTH */}
-        <Route path="/roles" element={<RoleSelectionPage />} />
+        <Route
+          path="/demo"
+          element={<DemoLanding />}
+        />
+
+        <Route
+          path="/public-map"
+          element={<PublicMapPage />}
+        />
+
+        <Route
+          path="/public-insights"
+          element={<PublicInsightsPage />}
+        />
+
+        <Route
+          path="/roles"
+          element={<RoleSelectionPage />}
+        />
+
         <Route
           path="/login/worker"
-          element={<LoginPage roleType="worker" />}
+          element={
+            <LoginPage roleType="worker" />
+          }
         />
+
         <Route
           path="/login/manager"
-          element={<LoginPage roleType="manager" />}
+          element={
+            <LoginPage roleType="manager" />
+          }
         />
+
         <Route
           path="/login/operator"
-          element={<LoginPage roleType="operator" />}
+          element={
+            <LoginPage roleType="operator" />
+          }
         />
 
-        {/* WORKER */}
-        <Route element={<ProtectedRoute allowedRoles={["WORKER"]} />}>
-          <Route path="/worker" element={<WorkerDashboard />} />
-          <Route path="/worker/tasks" element={<WorkerTasks />} />
-          <Route path="/worker/map" element={<WorkerLiveMap />} />
-          <Route path="/worker/approvals" element={<WorkerApprovals />} />
-          <Route path="/worker/work-log" element={<WorkerWorkLog />} />
-          <Route path="/worker/safety" element={<WorkerSafety />} />
-          <Route path="/worker/messages" element={<WorkerMessages />} />
-          <Route path="/worker/resources" element={<WorkerResources />} />
-          <Route path="/worker/help" element={<WorkerHelp />} />
-        </Route>
-
-        {/* MANAGER */}
-        <Route element={<ProtectedRoute allowedRoles={["MANAGER"]} />}>
-          <Route path="/manager" element={<ManagerDashboard />} />
-        </Route>
-
-        {/* TRAIN OPERATOR */}
         <Route
           element={
-            <ProtectedRoute allowedRoles={["TRAIN_OPERATOR"]} />
+            <ProtectedRoute
+              allowedRoles={["WORKER"]}
+            />
           }
         >
-          <Route path="/operator" element={<OperatorDashboard />} />
+          <Route
+            path="/worker"
+            element={<WorkerDashboard />}
+          />
+
+          <Route
+            path="/worker/tasks"
+            element={<WorkerTasks />}
+          />
+
+          <Route
+            path="/worker/map"
+            element={<WorkerLiveMap />}
+          />
+
+          <Route
+            path="/worker/approvals"
+            element={<WorkerApprovals />}
+          />
+
+          <Route
+            path="/worker/work-log"
+            element={<WorkerWorkLog />}
+          />
+
+          <Route
+            path="/worker/safety"
+            element={<WorkerSafety />}
+          />
+
+          <Route
+            path="/worker/messages"
+            element={<WorkerMessages />}
+          />
+
+          <Route
+            path="/worker/resources"
+            element={<WorkerResources />}
+          />
+
+          <Route
+            path="/worker/help"
+            element={<WorkerHelp />}
+          />
+        </Route>
+
+        <Route
+          element={
+            <ProtectedRoute
+              allowedRoles={["MANAGER"]}
+            />
+          }
+        >
+          <Route
+            path="/manager"
+            element={<ManagerDashboard />}
+          />
+        </Route>
+
+        <Route
+          element={
+            <ProtectedRoute
+              allowedRoles={["TRAIN_OPERATOR"]}
+            />
+          }
+        >
+          <Route
+            path="/operator"
+            element={<OperatorDashboard />}
+          />
+
           <Route
             path="/operator/disruptions"
             element={<OperatorDisruptions />}
           />
+
           <Route
             path="/operator/trains"
             element={<OperatorAffectedTrains />}
           />
+
           <Route
             path="/operator/alternatives"
             element={<OperatorAlternatives />}
           />
+
           <Route
             path="/operator/decisions"
             element={<OperatorDecisionLog />}
           />
+
           <Route
             path="/operator/simulation"
             element={<OperatorSimulation />}
