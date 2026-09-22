@@ -1,8 +1,4 @@
 import {
-  useEffect,
-} from "react";
-
-import {
   BrowserRouter,
   Route,
   Routes,
@@ -36,184 +32,231 @@ import OperatorDecisionLog from "./pages/operator/OperatorDecisionLog";
 import OperatorSimulation from "./pages/operator/OperatorSimulation";
 
 
-export const DEMO_MODE_KEY =
-  "railsync_demo_mode";
-
-
-function NormalLanding() {
-  useEffect(() => {
-    sessionStorage.removeItem(
-      DEMO_MODE_KEY,
-    );
-  }, []);
-
-  return <LandingPage />;
-}
-
-
-function DemoLanding() {
-  useEffect(() => {
-    sessionStorage.setItem(
-      DEMO_MODE_KEY,
-      "true",
-    );
-  }, []);
-
-  return <LandingPage />;
-}
-
-
 export default function App() {
   return (
     <BrowserRouter>
       <Routes>
+        {/* NORMAL PROJECT */}
+
         <Route
           path="/"
-          element={<NormalLanding />}
+          element={
+            <LandingPage />
+          }
         />
+
+
+        {/* PPT / JUDGE DEMO */}
 
         <Route
           path="/demo"
-          element={<DemoLanding />}
+          element={
+            <LandingPage />
+          }
         />
+
+
+        {/* PUBLIC */}
 
         <Route
           path="/public-map"
-          element={<PublicMapPage />}
+          element={
+            <PublicMapPage />
+          }
         />
 
         <Route
           path="/public-insights"
-          element={<PublicInsightsPage />}
+          element={
+            <PublicInsightsPage />
+          }
         />
+
+
+        {/* AUTH */}
 
         <Route
           path="/roles"
-          element={<RoleSelectionPage />}
+          element={
+            <RoleSelectionPage />
+          }
         />
 
         <Route
           path="/login/worker"
           element={
-            <LoginPage roleType="worker" />
+            <LoginPage
+              roleType="worker"
+            />
           }
         />
 
         <Route
           path="/login/manager"
           element={
-            <LoginPage roleType="manager" />
+            <LoginPage
+              roleType="manager"
+            />
           }
         />
 
         <Route
           path="/login/operator"
           element={
-            <LoginPage roleType="operator" />
+            <LoginPage
+              roleType="operator"
+            />
           }
         />
+
+
+        {/* WORKER */}
 
         <Route
           element={
             <ProtectedRoute
-              allowedRoles={["WORKER"]}
+              allowedRoles={[
+                "WORKER",
+              ]}
             />
           }
         >
           <Route
             path="/worker"
-            element={<WorkerDashboard />}
+            element={
+              <WorkerDashboard />
+            }
           />
 
           <Route
             path="/worker/tasks"
-            element={<WorkerTasks />}
+            element={
+              <WorkerTasks />
+            }
           />
 
           <Route
             path="/worker/map"
-            element={<WorkerLiveMap />}
+            element={
+              <WorkerLiveMap />
+            }
           />
 
           <Route
             path="/worker/approvals"
-            element={<WorkerApprovals />}
+            element={
+              <WorkerApprovals />
+            }
           />
 
           <Route
             path="/worker/work-log"
-            element={<WorkerWorkLog />}
+            element={
+              <WorkerWorkLog />
+            }
           />
 
           <Route
             path="/worker/safety"
-            element={<WorkerSafety />}
+            element={
+              <WorkerSafety />
+            }
           />
 
           <Route
             path="/worker/messages"
-            element={<WorkerMessages />}
+            element={
+              <WorkerMessages />
+            }
           />
 
           <Route
             path="/worker/resources"
-            element={<WorkerResources />}
+            element={
+              <WorkerResources />
+            }
           />
 
           <Route
             path="/worker/help"
-            element={<WorkerHelp />}
+            element={
+              <WorkerHelp />
+            }
           />
         </Route>
+
+
+        {/* MANAGER */}
 
         <Route
           element={
             <ProtectedRoute
-              allowedRoles={["MANAGER"]}
+              allowedRoles={[
+                "MANAGER",
+              ]}
             />
           }
         >
           <Route
             path="/manager"
-            element={<ManagerDashboard />}
+            element={
+              <ManagerDashboard />
+            }
           />
         </Route>
+
+
+        {/* TRAIN OPERATOR */}
 
         <Route
           element={
             <ProtectedRoute
-              allowedRoles={["TRAIN_OPERATOR"]}
+              allowedRoles={[
+                "TRAIN_OPERATOR",
+              ]}
             />
           }
         >
           <Route
             path="/operator"
-            element={<OperatorDashboard />}
+            element={
+              <OperatorDashboard />
+            }
           />
 
           <Route
             path="/operator/disruptions"
-            element={<OperatorDisruptions />}
+            element={
+              <OperatorDisruptions />
+            }
           />
 
           <Route
             path="/operator/trains"
-            element={<OperatorAffectedTrains />}
+            element={
+              <OperatorAffectedTrains />
+            }
           />
 
           <Route
             path="/operator/alternatives"
-            element={<OperatorAlternatives />}
+            element={
+              <OperatorAlternatives />
+            }
           />
 
           <Route
             path="/operator/decisions"
-            element={<OperatorDecisionLog />}
+            element={
+              <OperatorDecisionLog />
+            }
           />
 
           <Route
             path="/operator/simulation"
-            element={<OperatorSimulation />}
+            element={
+              <OperatorSimulation />
+            }
           />
         </Route>
       </Routes>
