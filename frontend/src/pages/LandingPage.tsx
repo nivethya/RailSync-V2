@@ -1,6 +1,4 @@
-import {
-  useState,
-} from "react";
+import { useState } from "react";
 
 import {
   useLocation,
@@ -24,9 +22,7 @@ import {
   Wrench,
 } from "lucide-react";
 
-import {
-  useAuth,
-} from "../context/AuthContext";
+import { useAuth } from "../context/AuthContext";
 
 import type {
   UserRole,
@@ -45,222 +41,125 @@ type DemoRole =
 
 const demoAccounts = {
   worker: {
-    employee_id:
-      "WRK001",
-
-    password:
-      "RailSync@123",
-
-    role:
-      "WORKER" as UserRole,
-
-    destination:
-      "/worker",
+    employee_id: "WRK001",
+    password: "RailSync@123",
+    role: "WORKER" as UserRole,
+    destination: "/worker",
   },
 
   manager: {
-    employee_id:
-      "MGR001",
-
-    password:
-      "RailSync@123",
-
-    role:
-      "MANAGER" as UserRole,
-
-    destination:
-      "/manager",
+    employee_id: "MGR001",
+    password: "RailSync@123",
+    role: "MANAGER" as UserRole,
+    destination: "/manager",
   },
 
   operator: {
-    employee_id:
-      "TOP001",
-
-    password:
-      "RailSync@123",
-
-    role:
-      "TRAIN_OPERATOR" as UserRole,
-
-    destination:
-      "/operator",
+    employee_id: "TOP001",
+    password: "RailSync@123",
+    role: "TRAIN_OPERATOR" as UserRole,
+    destination: "/operator",
   },
 };
 
 
 const features = [
   {
-    icon:
-      Wrench,
-
-    title:
-      "Unified Maintenance",
-
-    subtitle:
-      "Bring all departments together",
-
-    path:
-      "/login/manager",
-
-    demoRole:
-      "manager" as DemoRole,
+    icon: Wrench,
+    title: "Unified Maintenance",
+    subtitle: "Bring all departments together",
+    path: "/login/manager",
+    demoRole: "manager" as DemoRole,
   },
 
   {
-    icon:
-      BrainCircuit,
-
-    title:
-      "AI Prioritization",
-
-    subtitle:
-      "Focus on what matters most",
-
-    path:
-      "/public-insights",
+    icon: BrainCircuit,
+    title: "AI Prioritization",
+    subtitle: "Focus on what matters most",
+    path: "/public-insights",
   },
 
   {
-    icon:
-      CalendarDays,
-
-    title:
-      "Smart Block Planning",
-
-    subtitle:
-      "Minimize disruption",
-
-    path:
-      "/login/manager",
-
-    demoRole:
-      "manager" as DemoRole,
+    icon: CalendarDays,
+    title: "Smart Block Planning",
+    subtitle: "Minimize disruption",
+    path: "/login/manager",
+    demoRole: "manager" as DemoRole,
   },
 
   {
-    icon:
-      TrainFront,
-
-    title:
-      "Real-Time Train Visibility",
-
-    subtitle:
-      "Network-wide visibility",
-
-    path:
-      "/public-map",
+    icon: TrainFront,
+    title: "Real-Time Train Visibility",
+    subtitle: "Network-wide visibility",
+    path: "/public-map",
   },
 
   {
-    icon:
-      Users,
-
-    title:
-      "Coordinated Operations",
-
-    subtitle:
-      "Track, signal & electrical",
-
-    path:
-      "/login/operator",
-
-    demoRole:
-      "operator" as DemoRole,
+    icon: Users,
+    title: "Coordinated Operations",
+    subtitle: "Track, signal & electrical",
+    path: "/login/operator",
+    demoRole: "operator" as DemoRole,
   },
 ];
 
 
 const benefits = [
   {
-    icon:
-      Network,
-
-    title:
-      "A More Reliable",
-
-    subtitle:
-      "Railway Network",
+    icon: Network,
+    title: "A More Reliable",
+    subtitle: "Railway Network",
   },
 
   {
-    icon:
-      Wrench,
-
-    title:
-      "Smarter Maintenance",
-
-    subtitle:
-      "Fewer Failures",
+    icon: Wrench,
+    title: "Smarter Maintenance",
+    subtitle: "Fewer Failures",
   },
 
   {
-    icon:
-      ShieldCheck,
-
-    title:
-      "Higher Safety",
-
-    subtitle:
-      "For Every Journey",
+    icon: ShieldCheck,
+    title: "Higher Safety",
+    subtitle: "For Every Journey",
   },
 
   {
-    icon:
-      Activity,
-
-    title:
-      "Better Asset Utilization",
-
-    subtitle:
-      "Greater Availability",
+    icon: Activity,
+    title: "Better Asset Utilization",
+    subtitle: "Greater Availability",
   },
 
   {
-    icon:
-      Users,
-
-    title:
-      "Coordinated Teams",
-
-    subtitle:
-      "Stronger Operations",
+    icon: Users,
+    title: "Coordinated Teams",
+    subtitle: "Stronger Operations",
   },
 ];
 
 
 function LandingPage() {
-  const navigate =
-    useNavigate();
+  const navigate = useNavigate();
 
-  const location =
-    useLocation();
+  const location = useLocation();
 
-  const {
-    login,
-  } =
-    useAuth();
+  const { login } = useAuth();
 
   const isDemoMode =
-    location.pathname ===
-    "/demo";
+    location.pathname === "/demo";
 
   const [
     demoLoading,
     setDemoLoading,
-  ] =
-    useState<
-      DemoRole | null
-    >(null);
+  ] = useState<DemoRole | null>(
+    null,
+  );
 
 
   const openRole =
     async (
-      roleType:
-        DemoRole,
+      roleType: DemoRole,
     ) => {
-      if (
-        !isDemoMode
-      ) {
+      if (!isDemoMode) {
         navigate(
           `/login/${roleType}`,
         );
@@ -268,21 +167,21 @@ function LandingPage() {
         return;
       }
 
-      if (
-        demoLoading
-      ) {
+
+      if (demoLoading) {
         return;
       }
 
+
       const account =
-        demoAccounts[
-          roleType
-        ];
+        demoAccounts[roleType];
+
 
       try {
         setDemoLoading(
           roleType,
         );
+
 
         const user =
           await login({
@@ -296,6 +195,7 @@ function LandingPage() {
               account.role,
           });
 
+
         if (
           user.role !==
           account.role
@@ -305,23 +205,34 @@ function LandingPage() {
           );
         }
 
-        navigate(
+
+        /*
+         * Important:
+         *
+         * Use a complete page reload instead of
+         * React Router navigation.
+         *
+         * This gives AuthContext and ProtectedRoute
+         * a fresh startup using the token/user that
+         * login() stored in localStorage.
+         */
+
+        window.location.replace(
           account.destination,
-          {
-            replace:
-              true,
-          },
         );
+
       } catch (error) {
         console.error(
           "RailSync demo login failed:",
           error,
         );
 
+
         alert(
           "Unable to start the RailSync demo. Please try again.",
         );
-      } finally {
+
+
         setDemoLoading(
           null,
         );
@@ -331,10 +242,8 @@ function LandingPage() {
 
   const openFeature =
     (
-      path:
-        string,
-      demoRole?:
-        DemoRole,
+      path: string,
+      demoRole?: DemoRole,
     ) => {
       if (
         isDemoMode &&
@@ -347,6 +256,7 @@ function LandingPage() {
         return;
       }
 
+
       navigate(
         path,
       );
@@ -355,15 +265,14 @@ function LandingPage() {
 
   const goHome =
     () => {
-      if (
-        isDemoMode
-      ) {
+      if (isDemoMode) {
         navigate(
           "/demo",
         );
 
         return;
       }
+
 
       navigate(
         "/",
@@ -376,12 +285,9 @@ function LandingPage() {
       <header className="rail-header">
         <div
           className="header-brand"
-          onClick={
-            goHome
-          }
+          onClick={goHome}
           style={{
-            cursor:
-              "pointer",
+            cursor: "pointer",
           }}
         >
           <div className="mini-brand-symbol">
@@ -420,13 +326,9 @@ function LandingPage() {
         <nav className="main-navigation">
           <button
             className="navigation-item active"
-            onClick={
-              goHome
-            }
+            onClick={goHome}
           >
-            <Home
-              size={14}
-            />
+            <Home size={14} />
 
             Home
           </button>
@@ -439,12 +341,16 @@ function LandingPage() {
                 "operator",
               )
             }
+            disabled={
+              demoLoading !== null
+            }
           >
-            <BarChart3
-              size={14}
-            />
+            <BarChart3 size={14} />
 
-            Operations
+            {demoLoading ===
+            "operator"
+              ? "Opening..."
+              : "Operations"}
           </button>
 
 
@@ -455,12 +361,16 @@ function LandingPage() {
                 "manager",
               )
             }
+            disabled={
+              demoLoading !== null
+            }
           >
-            <Wrench
-              size={14}
-            />
+            <Wrench size={14} />
 
-            Maintenance
+            {demoLoading ===
+            "manager"
+              ? "Opening..."
+              : "Maintenance"}
           </button>
 
 
@@ -472,9 +382,7 @@ function LandingPage() {
               )
             }
           >
-            <Network
-              size={14}
-            />
+            <Network size={14} />
 
             Network
           </button>
@@ -488,9 +396,7 @@ function LandingPage() {
               )
             }
           >
-            <MapPinned
-              size={14}
-            />
+            <MapPinned size={14} />
 
             Insights
           </button>
@@ -502,6 +408,7 @@ function LandingPage() {
             <div className="railway-roundel">
               IR
             </div>
+
 
             <div>
               <strong>
@@ -515,7 +422,7 @@ function LandingPage() {
           </div>
 
 
-          {!isDemoMode && (
+          {!isDemoMode ? (
             <button
               className="header-login"
               onClick={() =>
@@ -524,9 +431,7 @@ function LandingPage() {
                 )
               }
             >
-              <Users
-                size={17}
-              />
+              <Users size={17} />
 
               Login
 
@@ -534,10 +439,7 @@ function LandingPage() {
                 size={17}
               />
             </button>
-          )}
-
-
-          {isDemoMode && (
+          ) : (
             <button
               className="header-login"
               onClick={() =>
@@ -546,13 +448,10 @@ function LandingPage() {
                 )
               }
               disabled={
-                demoLoading !==
-                null
+                demoLoading !== null
               }
             >
-              <Users
-                size={17}
-              />
+              <Users size={17} />
 
               {demoLoading ===
               "worker"
@@ -620,6 +519,7 @@ function LandingPage() {
                 const Icon =
                   feature.icon;
 
+
                 return (
                   <article
                     className="landing-feature"
@@ -672,9 +572,7 @@ function LandingPage() {
                 )
               }
             >
-              <Map
-                size={18}
-              />
+              <Map size={18} />
 
               View Live Rail Map
 
@@ -733,6 +631,7 @@ function LandingPage() {
             ) => {
               const Icon =
                 benefit.icon;
+
 
               return (
                 <div
