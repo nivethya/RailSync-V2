@@ -1,7 +1,4 @@
-import { useState } from "react";
-
 import {
-  useLocation,
   useNavigate,
 } from "react-router-dom";
 
@@ -22,44 +19,13 @@ import {
   Wrench,
 } from "lucide-react";
 
-import { useAuth } from "../context/AuthContext";
-
-import type {
-  UserRole,
-} from "../types/auth";
-
 import RailNetworkMap from "../components/map/RailNetworkMap";
 
 import "../styles/landing.css";
 
 
-type DemoRole =
-  | "worker"
-  | "manager"
-  | "operator";
-
-
-const demoAccounts = {
-  worker: {
-    employee_id: "WRK001",
-    password: "RailSync@123",
-    role: "WORKER" as UserRole,
-    destination: "/worker",
-  },
-
-  manager: {
-    employee_id: "MGR001",
-    password: "RailSync@123",
-    role: "MANAGER" as UserRole,
-    destination: "/manager",
-  },
-
-  operator: {
-    employee_id: "TOP001",
-    password: "RailSync@123",
-    role: "TRAIN_OPERATOR" as UserRole,
-    destination: "/operator",
-  },
+type LandingPageProps = {
+  demoMode?: boolean;
 };
 
 
@@ -68,8 +34,8 @@ const features = [
     icon: Wrench,
     title: "Unified Maintenance",
     subtitle: "Bring all departments together",
+    role: "manager",
     path: "/login/manager",
-    demoRole: "manager" as DemoRole,
   },
 
   {
@@ -83,8 +49,8 @@ const features = [
     icon: CalendarDays,
     title: "Smart Block Planning",
     subtitle: "Minimize disruption",
+    role: "manager",
     path: "/login/manager",
-    demoRole: "manager" as DemoRole,
   },
 
   {
@@ -98,8 +64,8 @@ const features = [
     icon: Users,
     title: "Coordinated Operations",
     subtitle: "Track, signal & electrical",
+    role: "operator",
     path: "/login/operator",
-    demoRole: "operator" as DemoRole,
   },
 ];
 
@@ -137,145 +103,47 @@ const benefits = [
 ];
 
 
-function LandingPage() {
-  const navigate = useNavigate();
-
-  const location = useLocation();
-
-  const { login } = useAuth();
-
-  const isDemoMode =
-    location.pathname === "/demo";
-
-  const [
-    demoLoading,
-    setDemoLoading,
-  ] = useState<DemoRole | null>(
-    null,
-  );
-
-
-  const openRole =
-    async (
-      roleType: DemoRole,
-    ) => {
-      if (!isDemoMode) {
-        navigate(
-          `/login/${roleType}`,
-        );
-
-        return;
-      }
-
-
-      if (demoLoading) {
-        return;
-      }
-
-
-      const account =
-        demoAccounts[roleType];
-
-
-      try {
-        setDemoLoading(
-          roleType,
-        );
-
-
-        const user =
-          await login({
-            employee_id:
-              account.employee_id,
-
-            password:
-              account.password,
-
-            role:
-              account.role,
-          });
-
-
-        if (
-          user.role !==
-          account.role
-        ) {
-          throw new Error(
-            "Demo role mismatch",
-          );
-        }
-
-
-        /*
-         * Important:
-         *
-         * Use a complete page reload instead of
-         * React Router navigation.
-         *
-         * This gives AuthContext and ProtectedRoute
-         * a fresh startup using the token/user that
-         * login() stored in localStorage.
-         */
-
-        window.location.replace(
-          account.destination,
-        );
-
-      } catch (error) {
-        console.error(
-          "RailSync demo login failed:",
-          error,
-        );
-
-
-        alert(
-          "Unable to start the RailSync demo. Please try again.",
-        );
-
-
-        setDemoLoading(
-          null,
-        );
-      }
-    };
-
-
-  const openFeature =
-    (
-      path: string,
-      demoRole?: DemoRole,
-    ) => {
-      if (
-        isDemoMode &&
-        demoRole
-      ) {
-        openRole(
-          demoRole,
-        );
-
-        return;
-      }
-
-
-      navigate(
-        path,
-      );
-    };
+function LandingPage({
+  demoMode = false,
+}: LandingPageProps) {
+  const navigate =
+    useNavigate();
 
 
   const goHome =
     () => {
-      if (isDemoMode) {
+      navigate(
+        demoMode
+          ? "/demo"
+          : "/",
+      );
+    };
+
+
+  const openLogin =
+    () => {
+      navigate(
+        demoMode
+          ? "/demo/roles"
+          : "/roles",
+      );
+    };
+
+
+  const openProtectedArea =
+    (
+      normalPath: string,
+    ) => {
+      if (demoMode) {
         navigate(
-          "/demo",
+          "/demo/roles",
         );
 
         return;
       }
 
-
       navigate(
-        "/",
+        normalPath,
       );
     };
 
@@ -295,7 +163,6 @@ function LandingPage() {
             <span />
           </div>
 
-
           <div className="header-brand-copy">
             <strong>
               RailSync
@@ -305,7 +172,6 @@ function LandingPage() {
               INDIAN RAILWAYS
             </small>
           </div>
-
 
           <div className="header-motto">
             <span>
@@ -337,40 +203,28 @@ function LandingPage() {
           <button
             className="navigation-item"
             onClick={() =>
-              openRole(
-                "operator",
+              openProtectedArea(
+                "/login/operator",
               )
-            }
-            disabled={
-              demoLoading !== null
             }
           >
             <BarChart3 size={14} />
 
-            {demoLoading ===
-            "operator"
-              ? "Opening..."
-              : "Operations"}
+            Operations
           </button>
 
 
           <button
             className="navigation-item"
             onClick={() =>
-              openRole(
-                "manager",
+              openProtectedArea(
+                "/login/manager",
               )
-            }
-            disabled={
-              demoLoading !== null
             }
           >
             <Wrench size={14} />
 
-            {demoLoading ===
-            "manager"
-              ? "Opening..."
-              : "Maintenance"}
+            Maintenance
           </button>
 
 
@@ -409,7 +263,6 @@ function LandingPage() {
               IR
             </div>
 
-
             <div>
               <strong>
                 भारतीय रेल
@@ -422,47 +275,16 @@ function LandingPage() {
           </div>
 
 
-          {!isDemoMode ? (
-            <button
-              className="header-login"
-              onClick={() =>
-                navigate(
-                  "/roles",
-                )
-              }
-            >
-              <Users size={17} />
+          <button
+            className="header-login"
+            onClick={openLogin}
+          >
+            <Users size={17} />
 
-              Login
+            Login
 
-              <ArrowRight
-                size={17}
-              />
-            </button>
-          ) : (
-            <button
-              className="header-login"
-              onClick={() =>
-                openRole(
-                  "worker",
-                )
-              }
-              disabled={
-                demoLoading !== null
-              }
-            >
-              <Users size={17} />
-
-              {demoLoading ===
-              "worker"
-                ? "Opening..."
-                : "Worker Demo"}
-
-              <ArrowRight
-                size={17}
-              />
-            </button>
-          )}
+            <ArrowRight size={17} />
+          </button>
         </div>
       </header>
 
@@ -482,14 +304,10 @@ function LandingPage() {
 
               <span className="tricolor green" />
 
-
               <div className="train-circle">
-                <TrainFront
-                  size={34}
-                />
+                <TrainFront size={34} />
               </div>
             </div>
-
 
             <div className="large-brand-name">
               RailSync
@@ -519,42 +337,40 @@ function LandingPage() {
                 const Icon =
                   feature.icon;
 
-
                 return (
                   <article
                     className="landing-feature"
-                    key={
-                      feature.title
-                    }
-                    onClick={() =>
-                      openFeature(
+                    key={feature.title}
+                    onClick={() => {
+                      if (
+                        feature.role &&
+                        demoMode
+                      ) {
+                        navigate(
+                          "/demo/roles",
+                        );
+
+                        return;
+                      }
+
+                      navigate(
                         feature.path,
-                        feature.demoRole,
-                      )
-                    }
+                      );
+                    }}
                     style={{
-                      cursor:
-                        "pointer",
+                      cursor: "pointer",
                     }}
                   >
                     <div className="landing-feature-icon">
-                      <Icon
-                        size={22}
-                      />
+                      <Icon size={22} />
                     </div>
 
-
                     <strong>
-                      {
-                        feature.title
-                      }
+                      {feature.title}
                     </strong>
 
-
                     <span>
-                      {
-                        feature.subtitle
-                      }
+                      {feature.subtitle}
                     </span>
                   </article>
                 );
@@ -576,9 +392,7 @@ function LandingPage() {
 
               View Live Rail Map
 
-              <ArrowRight
-                size={17}
-              />
+              <ArrowRight size={17} />
             </button>
 
 
@@ -592,9 +406,7 @@ function LandingPage() {
                 );
               }}
             >
-              <PlayCircle
-                size={18}
-              />
+              <PlayCircle size={18} />
 
               See How RailSync Works
             </button>
@@ -632,32 +444,22 @@ function LandingPage() {
               const Icon =
                 benefit.icon;
 
-
               return (
                 <div
                   className="benefit-cell"
-                  key={
-                    benefit.title
-                  }
+                  key={benefit.title}
                 >
                   <div className="benefit-symbol">
-                    <Icon
-                      size={23}
-                    />
+                    <Icon size={23} />
                   </div>
-
 
                   <div>
                     <strong>
-                      {
-                        benefit.title
-                      }
+                      {benefit.title}
                     </strong>
 
                     <span>
-                      {
-                        benefit.subtitle
-                      }
+                      {benefit.subtitle}
                     </span>
                   </div>
                 </div>

@@ -36,22 +36,22 @@ export default function App() {
   return (
     <BrowserRouter>
       <Routes>
-        {/* NORMAL PROJECT */}
+        {/* NORMAL LANDING */}
 
         <Route
           path="/"
           element={
-            <LandingPage />
+            <LandingPage demoMode={false} />
           }
         />
 
 
-        {/* PPT / JUDGE DEMO */}
+        {/* PPT DEMO LANDING */}
 
         <Route
           path="/demo"
           element={
-            <LandingPage />
+            <LandingPage demoMode={true} />
           }
         />
 
@@ -60,27 +60,40 @@ export default function App() {
 
         <Route
           path="/public-map"
-          element={
-            <PublicMapPage />
-          }
+          element={<PublicMapPage />}
         />
 
         <Route
           path="/public-insights"
-          element={
-            <PublicInsightsPage />
-          }
+          element={<PublicInsightsPage />}
         />
 
 
-        {/* AUTH */}
+        {/* NORMAL ROLE SELECTION */}
 
         <Route
           path="/roles"
           element={
-            <RoleSelectionPage />
+            <RoleSelectionPage
+              demoMode={false}
+            />
           }
         />
+
+
+        {/* PPT DEMO ROLE SELECTION */}
+
+        <Route
+          path="/demo/roles"
+          element={
+            <RoleSelectionPage
+              demoMode={true}
+            />
+          }
+        />
+
+
+        {/* NORMAL LOGIN PAGES */}
 
         <Route
           path="/login/worker"
@@ -115,73 +128,53 @@ export default function App() {
         <Route
           element={
             <ProtectedRoute
-              allowedRoles={[
-                "WORKER",
-              ]}
+              allowedRoles={["WORKER"]}
             />
           }
         >
           <Route
             path="/worker"
-            element={
-              <WorkerDashboard />
-            }
+            element={<WorkerDashboard />}
           />
 
           <Route
             path="/worker/tasks"
-            element={
-              <WorkerTasks />
-            }
+            element={<WorkerTasks />}
           />
 
           <Route
             path="/worker/map"
-            element={
-              <WorkerLiveMap />
-            }
+            element={<WorkerLiveMap />}
           />
 
           <Route
             path="/worker/approvals"
-            element={
-              <WorkerApprovals />
-            }
+            element={<WorkerApprovals />}
           />
 
           <Route
             path="/worker/work-log"
-            element={
-              <WorkerWorkLog />
-            }
+            element={<WorkerWorkLog />}
           />
 
           <Route
             path="/worker/safety"
-            element={
-              <WorkerSafety />
-            }
+            element={<WorkerSafety />}
           />
 
           <Route
             path="/worker/messages"
-            element={
-              <WorkerMessages />
-            }
+            element={<WorkerMessages />}
           />
 
           <Route
             path="/worker/resources"
-            element={
-              <WorkerResources />
-            }
+            element={<WorkerResources />}
           />
 
           <Route
             path="/worker/help"
-            element={
-              <WorkerHelp />
-            }
+            element={<WorkerHelp />}
           />
         </Route>
 
@@ -191,17 +184,13 @@ export default function App() {
         <Route
           element={
             <ProtectedRoute
-              allowedRoles={[
-                "MANAGER",
-              ]}
+              allowedRoles={["MANAGER"]}
             />
           }
         >
           <Route
             path="/manager"
-            element={
-              <ManagerDashboard />
-            }
+            element={<ManagerDashboard />}
           />
         </Route>
 
@@ -219,44 +208,32 @@ export default function App() {
         >
           <Route
             path="/operator"
-            element={
-              <OperatorDashboard />
-            }
+            element={<OperatorDashboard />}
           />
 
           <Route
             path="/operator/disruptions"
-            element={
-              <OperatorDisruptions />
-            }
+            element={<OperatorDisruptions />}
           />
 
           <Route
             path="/operator/trains"
-            element={
-              <OperatorAffectedTrains />
-            }
+            element={<OperatorAffectedTrains />}
           />
 
           <Route
             path="/operator/alternatives"
-            element={
-              <OperatorAlternatives />
-            }
+            element={<OperatorAlternatives />}
           />
 
           <Route
             path="/operator/decisions"
-            element={
-              <OperatorDecisionLog />
-            }
+            element={<OperatorDecisionLog />}
           />
 
           <Route
             path="/operator/simulation"
-            element={
-              <OperatorSimulation />
-            }
+            element={<OperatorSimulation />}
           />
         </Route>
       </Routes>
